@@ -23,7 +23,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
-local DefaultFOV = Camera and Camera.FieldOfView or 70
+local DefaultFOV = 70
+local OriginalFOV = 70
 
 -- Variables
 Arsenal.Settings = {
@@ -81,7 +82,6 @@ Arsenal.Settings = {
 }
 
 local FOVCircle
-local OriginalFOV = DefaultFOV
 
 local function getRGBFromTable(colorTable)
     colorTable = colorTable or {}
@@ -380,6 +380,12 @@ end
 -- Initialize
 function Arsenal:Init()
     pcall(function()
+        -- Store original FOV
+        if Camera then
+            OriginalFOV = Camera.FieldOfView
+            DefaultFOV = Camera.FieldOfView
+        end
+        
         -- Create ESP for existing players
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
