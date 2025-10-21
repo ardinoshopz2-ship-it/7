@@ -23,14 +23,6 @@ PrisonLife.Settings = {
         ShowDistance = true,
         ShowBox = true,
         TeamCheck = false,
-        UseTeamColor = true,
-        Rainbow = false,
-        RainbowSpeed = 4,
-        Color = {
-            R = 255,
-            G = 75,
-            B = 75,
-        },
     },
     Combat = {
         KillAura = false,
@@ -53,28 +45,12 @@ PrisonLife.Settings = {
     }
 }
 
-local function getRGBFromTable(colorTable)
-    colorTable = colorTable or {}
-    local r = math.clamp(colorTable.R or 255, 0, 255)
-    local g = math.clamp(colorTable.G or 0, 0, 255)
-    local b = math.clamp(colorTable.B or 0, 0, 255)
-    return Color3.fromRGB(r, g, b)
-end
-
 function PrisonLife:GetESPColor(player)
-    local espSettings = self.Settings.ESP
-
-    if espSettings.Rainbow then
-        local speed = math.clamp(espSettings.RainbowSpeed or 4, 0.1, 50)
-        local hue = (tick() * speed) % 1
-        return Color3.fromHSV(hue, 1, 1)
-    end
-
-    if espSettings.UseTeamColor and player and player.Team then
+    if player and player.Team then
         return player.Team.TeamColor.Color
     end
 
-    return getRGBFromTable(espSettings.Color)
+    return Color3.fromRGB(255, 80, 80)
 end
 
 function PrisonLife:GetAimPart(character)

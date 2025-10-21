@@ -6,7 +6,7 @@
     - Prison Life
     
     Load with:
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/lollakillah/5/main/Loader.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Loader.lua"))()
 ]]
 
 -- Check if already loaded
@@ -23,7 +23,7 @@ local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 
 -- Load Library
-local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/lollakillah/5/main/InovoLib.lua"))()
+local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
 
 -- Create Main Selection GUI (NO TABS!)
 local screenGui = Instance.new("ScreenGui")
@@ -160,16 +160,14 @@ arsenalIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 arsenalIcon.Parent = arsenalImg
 
 -- Try to load actual Arsenal image
-pcall(function()
-    local arsenalActualImg = Instance.new("ImageLabel")
-    arsenalActualImg.Size = UDim2.new(1, 0, 1, 0)
-    arsenalActualImg.BackgroundTransparency = 1
-    arsenalActualImg.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png" -- Fallback
-    arsenalActualImg.ScaleType = Enum.ScaleType.Crop
-    arsenalActualImg.ZIndex = 2
-    arsenalActualImg.Parent = arsenalImg
-    arsenalIcon.Visible = false
-end)
+local arsenalActualImg = Instance.new("ImageLabel")
+arsenalActualImg.Size = UDim2.new(1, 0, 1, 0)
+arsenalActualImg.BackgroundTransparency = 1
+arsenalActualImg.Image = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/image.png"
+arsenalActualImg.ScaleType = Enum.ScaleType.Crop
+arsenalActualImg.ZIndex = 2
+arsenalActualImg.Parent = arsenalImg
+arsenalIcon.Visible = false
 
 -- Arsenal Label
 local arsenalLabel = Instance.new("TextLabel")
@@ -225,16 +223,14 @@ prisonIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 prisonIcon.Parent = prisonImg
 
 -- Try to load actual Prison Life image
-pcall(function()
-    local prisonActualImg = Instance.new("ImageLabel")
-    prisonActualImg.Size = UDim2.new(1, 0, 1, 0)
-    prisonActualImg.BackgroundTransparency = 1
-    prisonActualImg.Image = "rbxasset://textures/ui/GuiImagePlaceholder.png" -- Fallback
-    prisonActualImg.ScaleType = Enum.ScaleType.Crop
-    prisonActualImg.ZIndex = 2
-    prisonActualImg.Parent = prisonImg
-    prisonIcon.Visible = false
-end)
+local prisonActualImg = Instance.new("ImageLabel")
+prisonActualImg.Size = UDim2.new(1, 0, 1, 0)
+prisonActualImg.BackgroundTransparency = 1
+prisonActualImg.Image = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/images.jpg"
+prisonActualImg.ScaleType = Enum.ScaleType.Crop
+prisonActualImg.ZIndex = 2
+prisonActualImg.Parent = prisonImg
+prisonIcon.Visible = false
 
 -- Prison Life Label
 local prisonLabel = Instance.new("TextLabel")
@@ -270,7 +266,7 @@ arsenalBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Arsenal
-    local Arsenal = loadstring(game:HttpGet("https://raw.githubusercontent.com/lollakillah/5/main/Games/Arsenal.lua"))()
+    local Arsenal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/Arsenal.lua"))()
     Arsenal:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -401,6 +397,69 @@ arsenalBtn.MouseButton1Click:Connect(function()
             Arsenal.Settings.ESP.TeamCheckESP = value
         end
     })
+
+    VisualsTab:AddToggle({
+        Text = "Use Team Colors",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.ESP.UseTeamColor = value
+        end
+    })
+
+    VisualsTab:AddToggle({
+        Text = "Rainbow Mode",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.ESP.Rainbow = value
+        end
+    })
+
+    VisualsTab:AddSlider({
+        Text = "Rainbow Speed",
+        Min = 1,
+        Max = 20,
+        Default = 4,
+        Increment = 1,
+        Callback = function(value)
+            Arsenal.Settings.ESP.RainbowSpeed = value
+        end
+    })
+
+    VisualsTab:AddDivider()
+    VisualsTab:AddLabel("Custom ESP Color")
+
+    VisualsTab:AddSlider({
+        Text = "Red",
+        Min = 0,
+        Max = 255,
+        Default = 255,
+        Increment = 1,
+        Callback = function(value)
+            Arsenal.Settings.ESP.Color.R = value
+        end
+    })
+
+    VisualsTab:AddSlider({
+        Text = "Green",
+        Min = 0,
+        Max = 255,
+        Default = 60,
+        Increment = 1,
+        Callback = function(value)
+            Arsenal.Settings.ESP.Color.G = value
+        end
+    })
+
+    VisualsTab:AddSlider({
+        Text = "Blue",
+        Min = 0,
+        Max = 255,
+        Default = 60,
+        Increment = 1,
+        Callback = function(value)
+            Arsenal.Settings.ESP.Color.B = value
+        end
+    })
     
     -- Movement Tab
     MovementTab:AddLabel("Movement Settings")
@@ -445,6 +504,29 @@ arsenalBtn.MouseButton1Click:Connect(function()
     })
     
     -- Misc Tab
+    MiscTab:AddLabel("Camera Settings")
+    MiscTab:AddDivider()
+
+    MiscTab:AddToggle({
+        Text = "Custom Field of View",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.Camera.CustomFOV = value
+        end
+    })
+
+    MiscTab:AddSlider({
+        Text = "Field of View",
+        Min = 40,
+        Max = 120,
+        Default = 70,
+        Increment = 1,
+        Callback = function(value)
+            Arsenal.Settings.Camera.FieldOfView = value
+        end
+    })
+
+    MiscTab:AddDivider()
     MiscTab:AddLabel("Credits: InovoProductions")
     MiscTab:AddLabel("Version: 1.0.0")
 end)
@@ -455,7 +537,7 @@ prisonBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Prison Life
-    local PrisonLife = loadstring(game:HttpGet("https://raw.githubusercontent.com/lollakillah/5/main/Games/PrisonLife.lua"))()
+    local PrisonLife = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/PrisonLife.lua"))()
     PrisonLife:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -594,69 +676,6 @@ prisonBtn.MouseButton1Click:Connect(function()
             PrisonLife.Settings.ESP.TeamCheck = value
         end
     })
-
-    VisualsTab:AddToggle({
-        Text = "Use Team Colors",
-        Default = true,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.UseTeamColor = value
-        end
-    })
-
-    VisualsTab:AddToggle({
-        Text = "Rainbow Mode",
-        Default = false,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.Rainbow = value
-        end
-    })
-
-    VisualsTab:AddSlider({
-        Text = "Rainbow Speed",
-        Min = 1,
-        Max = 20,
-        Default = 4,
-        Increment = 1,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.RainbowSpeed = value
-        end
-    })
-
-    VisualsTab:AddDivider()
-    VisualsTab:AddLabel("Custom ESP Color (requires team color & rainbow off)")
-
-    VisualsTab:AddSlider({
-        Text = "Red",
-        Min = 0,
-        Max = 255,
-        Default = 255,
-        Increment = 1,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.Color.R = value
-        end
-    })
-
-    VisualsTab:AddSlider({
-        Text = "Green",
-        Min = 0,
-        Max = 255,
-        Default = 75,
-        Increment = 1,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.Color.G = value
-        end
-    })
-
-    VisualsTab:AddSlider({
-        Text = "Blue",
-        Min = 0,
-        Max = 255,
-        Default = 75,
-        Increment = 1,
-        Callback = function(value)
-            PrisonLife.Settings.ESP.Color.B = value
-        end
-    })
     
     -- Teleports Tab
     TeleportsTab:AddLabel("Location Teleports")
@@ -752,3 +771,6 @@ prisonBtn.MouseButton1Click:Connect(function()
 end)
 
 print("[InovoHub] Loaded!")
+
+
+
