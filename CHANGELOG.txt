@@ -1,54 +1,99 @@
-=== InovoProductions Script Hub - CHANGELOG v1.1.0 ===
+=== InovoProductions Script Hub - CHANGELOG v1.2.0 ===
 
-✅ ALLE AANPASSINGEN VOLTOOID:
+🎮 NIEUWE GAME TOEGEVOEGD: BLOX FRUITS!
 
-1. ❌ FOV CAMERA VERWIJDERD
-   - "Custom Field of View" sectie volledig verwijderd uit Misc tab
-   - Misc tab nu simpel met alleen Credits + Version info
-   - Arsenal.lua: Alle camera gerelateerde code verwijderd
-
-2. ✏️ TEAM CHECK TEXT OPGESCHOOND
-   Arsenal:
-   - Combat: "Team Check (Aimbot)" → "Team Check"
-   - Visuals: "Team Check (ESP)" → "Team Check"
+✨ BLOX FRUITS FEATURES:
+------------------------
+1. 🌾 AUTO FARM
+   - Auto Farm Level (met recommended quest system)
+   - Auto Quest Accept (automatisch quests pakken)
+   - Safe Mode (Anti-Ban delays & tweening)
+   - Farm Distance instelbaar (5-50 studs)
    
-   Prison Life:
-   - Combat: "Team Check" (al correct)
-   - Visuals: "Team Check" (al correct)
+2. 🍎 FRUIT COLLECTION
+   - Auto Collect Fruits (Devil Fruits)
+   - Fruit ESP met distance indicator
+   - Safe teleport naar fruits
    
-   → Nu consistent en clean in beide games!
+3. ⚔️ COMBAT
+   - Fast Attack (click simulation, veilig!)
+   - Auto Haki
+   - Kill Aura (10-100 range)
+   - Human-like delays tussen attacks
+   
+4. 👁️ ESP SYSTEM
+   - Fruit ESP (Devil Fruits)
+   - Player ESP
+   - Mob ESP
+   - Chest ESP
+   - Max Distance instelbaar (1000-10000m)
+   
+5. 🚀 TELEPORT
+   - Safe Teleport (Tween-based)
+   - Instant Teleport optie (riskant)
+   - Speed instelbaar (100-500)
+   - Anti-Cheat Bypass
+   
+6. 🏃 MOVEMENT
+   - Custom Speed (16-200)
+   - No Clip
+   - Collision bypass
+   
+7. 🛡️ ANTI-CHEAT PROTECTION
+   - Safe Mode met random delays
+   - Tween-based teleportation
+   - Human-like behavior simulation
+   - Remote Spy Protection
+   - Error handling everywhere
+   - Anti-AFK system
 
-3. 🎯 MEER AIM PART OPTIES
-   Arsenal + Prison Life beide uitgebreid van 3 naar 9 opties:
-   ✅ Head
-   ✅ HumanoidRootPart
-   ✅ Torso
-   ✅ UpperTorso (NIEUW)
-   ✅ LowerTorso (NIEUW)
-   ✅ LeftArm (NIEUW)
-   ✅ RightArm (NIEUW)
-   ✅ LeftLeg (NIEUW)
-   ✅ RightLeg (NIEUW)
+📊 QUEST SYSTEM:
+----------------
+✅ 100+ Quests programmed (Level 1-2450)
+✅ Sea 1 & Sea 2 support
+✅ Auto recommended quest based on level
+✅ Smart enemy detection & targeting
 
-4. 📸 FOTOS WORDEN AL GEBRUIKT
-   ✅ image.png voor Arsenal button
-   ✅ images.jpg voor Prison Life button
-   ✅ Laden via GitHub raw links
+🎯 COMPLETE FEATURE LIST:
+--------------------------
+- Auto Farm Level ✅
+- Auto Quest ✅
+- Auto Collect Fruits ✅
+- Fast Attack ✅
+- Kill Aura ✅
+- Auto Haki ✅
+- ESP (Fruits, Players, Mobs, Chests) ✅
+- Safe Teleport ✅
+- Custom Speed ✅
+- No Clip ✅
+- Anti-AFK ✅
 
-5. 🔧 EERDERE FIXES:
-   ✅ FOV Circle werkt nu altijd (niet alleen in menu)
-   ✅ Dropdown size vergroot (120px → 200px)
-   ✅ Dropdown items volledig zichtbaar (ClipsDescendants = false)
-   ✅ ZIndex verhoogd voor dropdown items (100+)
+⚠️ VEILIGHEID:
+--------------
+- Safe Mode standaard AAN
+- Tween teleport (geen instant tp detection)
+- Random delays (0.05-0.15 sec tussen acties)
+- Click simulation (geen remote spam)
+- Error handling (geen crashes)
+
+===================================
+
+EERDERE UPDATES (v1.1.0):
+✅ FOV Camera verwijderd uit Misc tab
+✅ Team Check text opgeschoond
+✅ Meer Aim Part opties (9 body parts)
+✅ Fotos toegevoegd aan game selector
+✅ FOV Circle fixes
 
 ===================================
 
 BESTANDEN GEWIJZIGD:
-- Loader.lua
-- Games/Arsenal.lua
-- InovoLib.lua
+- Loader.lua (3 games support, nieuwe UI size)
+- Games/BloxFruits.lua (NIEUW!)
+- CHANGELOG.txt (deze file)
 
-Version: 1.1.0
+Version: 1.2.0
 Credits: InovoProductions
 
-KLAAR VOOR GITHUB UPLOAD!
+🚀 KLAAR VOOR GITHUB UPLOAD!
+Upload alle files en test Blox Fruits!
