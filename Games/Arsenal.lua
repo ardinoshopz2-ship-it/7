@@ -75,10 +75,6 @@ Arsenal.Settings = {
         Enabled = false,
         Method = "Kills", -- Kills, Coins
     },
-    Misc = {
-        NoFallDamage = false,
-        AutoRespawn = false,
-    },
 }
 
 local FOVCircle
@@ -291,30 +287,7 @@ function Arsenal:CreateFOVCircle()
     FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
 end
 
--- Misc Functions
-function Arsenal:UpdateMisc()
-    if LocalPlayer.Character then
-        -- No Fall Damage
-        if self.Settings.Misc.NoFallDamage then
-            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                local falling = humanoid:GetState() == Enum.HumanoidStateType.Freefall
-                if falling then
-                    humanoid:ChangeState(Enum.HumanoidStateType.Landed)
-                end
-            end
-        end
-        
-        -- Auto Respawn
-        if self.Settings.Misc.AutoRespawn then
-            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health <= 0 then
-                task.wait(0.1)
-                LocalPlayer.Character:BreakJoints()
-            end
-        end
-    end
-end
+
 
 function Arsenal:GetClosestPlayer()
     local closestPlayer = nil
@@ -455,10 +428,7 @@ function Arsenal:Init()
                     FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
                 end)
             end
-            
-            pcall(function()
-                self:UpdateMisc()
-            end)
+
         end)
         
         print("[Arsenal] Initialized successfully!")

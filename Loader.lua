@@ -504,77 +504,11 @@ arsenalBtn.MouseButton1Click:Connect(function()
     })
     
     -- Misc Tab
-    MiscTab:AddLabel("Combat Features")
-    MiscTab:AddDivider()
-    
-    MiscTab:AddToggle({
-        Text = "Infinite Ammo",
-        Default = false,
-        Callback = function(value)
-            Arsenal.Settings.Combat.InfiniteAmmo = value
-        end
-    })
-    
-    MiscTab:AddToggle({
-        Text = "No Recoil",
-        Default = false,
-        Callback = function(value)
-            Arsenal.Settings.Combat.NoRecoil = value
-        end
-    })
-    
-    MiscTab:AddToggle({
-        Text = "Rapid Fire",
-        Default = false,
-        Callback = function(value)
-            Arsenal.Settings.Combat.RapidFire = value
-        end
-    })
-    
-    MiscTab:AddDivider()
-    MiscTab:AddLabel("Other Features")
-    MiscTab:AddDivider()
-    
-    MiscTab:AddToggle({
-        Text = "No Fall Damage",
-        Default = false,
-        Callback = function(value)
-            Arsenal.Settings.Misc = Arsenal.Settings.Misc or {}
-            Arsenal.Settings.Misc.NoFallDamage = value
-        end
-    })
-    
-    MiscTab:AddToggle({
-        Text = "Auto Respawn",
-        Default = false,
-        Callback = function(value)
-            Arsenal.Settings.Misc = Arsenal.Settings.Misc or {}
-            Arsenal.Settings.Misc.AutoRespawn = value
-        end
-    })
-    
-    MiscTab:AddButton({
-        Text = "Remove Kill Barriers",
-        Callback = function()
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("Part") and v.Name == "DeathBarrier" or v.Name == "KillBrick" then
-                    v:Destroy()
-                end
-            end
-        end
-    })
-    
-    MiscTab:AddButton({
-        Text = "Unlock First Person",
-        Callback = function()
-            game.Players.LocalPlayer.CameraMaxZoomDistance = 0.5
-            game.Players.LocalPlayer.CameraMinZoomDistance = 0.5
-        end
-    })
-
+    MiscTab:AddLabel("Information")
     MiscTab:AddDivider()
     MiscTab:AddLabel("Credits: InovoProductions")
     MiscTab:AddLabel("Version: 1.1.0")
+    MiscTab:AddLabel("Game: Arsenal")
 end)
 
 -- Prison Life Click
@@ -672,7 +606,7 @@ prisonBtn.MouseButton1Click:Connect(function()
 
     CombatTab:AddDropdown({
         Text = "Aim Part",
-        Items = {"Head", "Body", "Legs"},
+        Items = {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"},
         Default = "Head",
         Callback = function(value)
             PrisonLife.Settings.Combat.AimPart = value
@@ -813,7 +747,8 @@ prisonBtn.MouseButton1Click:Connect(function()
     
     MiscTab:AddDivider()
     MiscTab:AddLabel("Credits: InovoProductions")
-    MiscTab:AddLabel("Version: 1.0.0")
+    MiscTab:AddLabel("Version: 1.1.0")
+    MiscTab:AddLabel("Game: Prison Life")
 end)
 
 print("[InovoHub] Loaded!")

@@ -4,53 +4,51 @@
 
 1. ❌ FOV CAMERA VERWIJDERD
    - "Custom Field of View" sectie volledig verwijderd uit Misc tab
-   - UpdateCamera() functie verwijderd uit Arsenal.lua
-   - Camera.FieldOfView code verwijderd
+   - Misc tab nu simpel met alleen Credits + Version info
+   - Arsenal.lua: Alle camera gerelateerde code verwijderd
 
 2. ✏️ TEAM CHECK TEXT OPGESCHOOND
-   - Arsenal Combat: "Team Check (Aimbot)" → "Team Check"
-   - Arsenal Visuals: "Team Check (ESP)" → "Team Check"
-   - Prison Life: Was al correct
-   - Nu veel cleaner en duidelijker!
+   Arsenal:
+   - Combat: "Team Check (Aimbot)" → "Team Check"
+   - Visuals: "Team Check (ESP)" → "Team Check"
+   
+   Prison Life:
+   - Combat: "Team Check" (al correct)
+   - Visuals: "Team Check" (al correct)
+   
+   → Nu consistent en clean in beide games!
 
 3. 🎯 MEER AIM PART OPTIES
-   - Arsenal Aim Parts uitgebreid:
-     * Head
-     * HumanoidRootPart
-     * Torso
-     * UpperTorso (nieuw!)
-     * LowerTorso (nieuw!)
-     * LeftArm (nieuw!)
-     * RightArm (nieuw!)
-     * LeftLeg (nieuw!)
-     * RightLeg (nieuw!)
-   - 9 opties in totaal voor maximale precisie!
+   Arsenal + Prison Life beide uitgebreid van 3 naar 9 opties:
+   ✅ Head
+   ✅ HumanoidRootPart
+   ✅ Torso
+   ✅ UpperTorso (NIEUW)
+   ✅ LowerTorso (NIEUW)
+   ✅ LeftArm (NIEUW)
+   ✅ RightArm (NIEUW)
+   ✅ LeftLeg (NIEUW)
+   ✅ RightLeg (NIEUW)
 
-4. 🚀 NIEUWE CLIENT-SIDE FEATURES (Misc Tab Arsenal)
-   
-   Combat Features:
-   ✨ Infinite Ammo - Oneindig munitie
-   ✨ No Recoil - Geen terugslag
-   ✨ Rapid Fire - Sneller vuren
-   
-   Other Features:
-   ✨ No Fall Damage - Geen valschade
-   ✨ Auto Respawn - Automatisch respawnen na dood
-   ✨ Remove Kill Barriers - Verwijder death barriers
-   ✨ Unlock First Person - Force first person camera
-   
-   Nieuwe UpdateMisc() functie toegevoegd voor realtime updates!
+4. 📸 FOTOS WORDEN AL GEBRUIKT
+   ✅ image.png voor Arsenal button
+   ✅ images.jpg voor Prison Life button
+   ✅ Laden via GitHub raw links
 
-5. 🔧 EERDERE FIXES (al gedaan):
+5. 🔧 EERDERE FIXES:
    ✅ FOV Circle werkt nu altijd (niet alleen in menu)
    ✅ Dropdown size vergroot (120px → 200px)
-   ✅ Dropdown ClipsDescendants = false
+   ✅ Dropdown items volledig zichtbaar (ClipsDescendants = false)
    ✅ ZIndex verhoogd voor dropdown items (100+)
 
 ===================================
 
+BESTANDEN GEWIJZIGD:
+- Loader.lua
+- Games/Arsenal.lua
+- InovoLib.lua
+
 Version: 1.1.0
-Datum: 2025-10-22
 Credits: InovoProductions
 
-READY TO UPLOAD TO GITHUB!
+KLAAR VOOR GITHUB UPLOAD!

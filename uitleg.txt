@@ -1,4 +1,6 @@
-1. haal FOV voor camera uit
-2. bij teamcheck bij combat en visuals heb je esp en aimbotr haal dat text wegdus er staat teamcheck en bij combat is het aimbot en bij visuals esp
-3. Voeg meer aim part opties
-4. wat kan je meer toevoegen voor client side :)
+1. alle client dingetjes die je hebt toegevoegd haal dat er uit want werkt niet, heb je wel echt gedaan wat ik je hebt verteld?
+
+
+LATEN WE ZEGGEN JE PAST IETS AAN IN ARSENAL IETS MET COMBAT OF VISUAL DAN MOET JE DAT OOK BIJ PRISON LIFE AANPASSEN HE?? ZO TE ZIEN HEB JE DAT NIET GEDAAN??? WTF
+
+Ik wil nu dat de loader gebruik maakt van de fotos he in de root folder ik heb dat allemaal ook upgeload in github repo
