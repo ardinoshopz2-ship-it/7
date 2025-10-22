@@ -537,4 +537,10 @@ function BloxFruits:Destroy()
     self:ClearESP()
 end
 
+-- Create new instance
+function BloxFruits.new()
+    local self = setmetatable({}, BloxFruits)
+    return self
+end
+
 return BloxFruits

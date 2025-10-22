@@ -4,7 +4,6 @@
     Supported Games:
     - Arsenal
     - Prison Life
-    - Blox Fruits
     
     Load with:
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Loader.lua"))()
@@ -304,8 +303,8 @@ screenGui.Parent = CoreGui
 -- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "Main"
-mainFrame.Size = UDim2.new(0, 750, 0, 450)
-mainFrame.Position = UDim2.new(0.5, -375, 0.5, -225)
+mainFrame.Size = UDim2.new(0, 500, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
@@ -388,8 +387,8 @@ end)
 
 -- Arsenal Button
 local arsenalBtn = Instance.new("TextButton")
-arsenalBtn.Size = UDim2.new(0, 200, 0, 300)
-arsenalBtn.Position = UDim2.new(0, 40, 0, 80)
+arsenalBtn.Size = UDim2.new(0, 200, 0, 250)
+arsenalBtn.Position = UDim2.new(0, 40, 0, 90)
 arsenalBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 arsenalBtn.BorderSizePixel = 0
 arsenalBtn.Text = ""
@@ -451,8 +450,8 @@ arsenalLabel.Parent = arsenalBtn
 
 -- Prison Life Button
 local prisonBtn = Instance.new("TextButton")
-prisonBtn.Size = UDim2.new(0, 200, 0, 300)
-prisonBtn.Position = UDim2.new(0, 275, 0, 80)
+prisonBtn.Size = UDim2.new(0, 200, 0, 250)
+prisonBtn.Position = UDim2.new(0, 260, 0, 90)
 prisonBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 prisonBtn.BorderSizePixel = 0
 prisonBtn.Text = ""
@@ -512,59 +511,6 @@ prisonLabel.TextSize = 24
 prisonLabel.Font = Enum.Font.GothamBold
 prisonLabel.Parent = prisonBtn
 
--- Blox Fruits Button
-local bloxBtn = Instance.new("TextButton")
-bloxBtn.Size = UDim2.new(0, 200, 0, 300)
-bloxBtn.Position = UDim2.new(0, 510, 0, 80)
-bloxBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-bloxBtn.BorderSizePixel = 0
-bloxBtn.Text = ""
-bloxBtn.Parent = mainFrame
-
-local bloxCorner = Instance.new("UICorner")
-bloxCorner.CornerRadius = UDim.new(0, 10)
-bloxCorner.Parent = bloxBtn
-
--- Blox Fruits Image (placeholder with gradient)
-local bloxImg = Instance.new("Frame")
-bloxImg.Size = UDim2.new(1, -20, 0, 180)
-bloxImg.Position = UDim2.new(0, 10, 0, 10)
-bloxImg.BackgroundColor3 = Color3.fromRGB(255, 100, 255)
-bloxImg.BorderSizePixel = 0
-bloxImg.Parent = bloxBtn
-
-local bloxImgCorner = Instance.new("UICorner")
-bloxImgCorner.CornerRadius = UDim.new(0, 8)
-bloxImgCorner.Parent = bloxImg
-
-local bloxGrad = Instance.new("UIGradient")
-bloxGrad.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(150, 50, 200))
-}
-bloxGrad.Rotation = 45
-bloxGrad.Parent = bloxImg
-
--- Blox Fruits Icon Text
-local bloxIcon = Instance.new("TextLabel")
-bloxIcon.Size = UDim2.new(1, 0, 1, 0)
-bloxIcon.BackgroundTransparency = 1
-bloxIcon.Text = "🍎"
-bloxIcon.TextSize = 70
-bloxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-bloxIcon.Parent = bloxImg
-
--- Blox Fruits Label
-local bloxLabel = Instance.new("TextLabel")
-bloxLabel.Size = UDim2.new(1, 0, 0, 80)
-bloxLabel.Position = UDim2.new(0, 0, 1, -80)
-bloxLabel.BackgroundTransparency = 1
-bloxLabel.Text = "BLOX FRUITS"
-bloxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-bloxLabel.TextSize = 24
-bloxLabel.Font = Enum.Font.GothamBold
-bloxLabel.Parent = bloxBtn
-
 -- Hover effects
 arsenalBtn.MouseEnter:Connect(function()
     TweenService:Create(arsenalBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
@@ -580,14 +526,6 @@ end)
 
 prisonBtn.MouseLeave:Connect(function()
     TweenService:Create(prisonBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play()
-end)
-
-bloxBtn.MouseEnter:Connect(function()
-    TweenService:Create(bloxBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
-end)
-
-bloxBtn.MouseLeave:Connect(function()
-    TweenService:Create(bloxBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play()
 end)
 
 -- Arsenal Click
@@ -1016,253 +954,6 @@ prisonBtn.MouseButton1Click:Connect(function()
     MiscTab:AddLabel("Credits: InovoProductions")
     MiscTab:AddLabel("Version: 1.1.0")
     MiscTab:AddLabel("Game: Prison Life")
-end)
-
--- Blox Fruits Click
-bloxBtn.MouseButton1Click:Connect(function()
-    screenGui:Destroy()
-    task.wait(0.1)
-    
-    -- Load Blox Fruits
-    local BloxFruits = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/BloxFruits.lua"))()
-    BloxFruits:Init()
-    
-    local Window = InovoLib:CreateWindow({
-        Title = "InovoProductions | Blox Fruits",
-        Size = UDim2.new(0, 650, 0, 550)
-    })
-    
-    local AutoFarmTab = Window:CreateTab("Auto Farm")
-    local CombatTab = Window:CreateTab("Combat")
-    local ESPTab = Window:CreateTab("ESP")
-    local TeleportTab = Window:CreateTab("Teleport")
-    local MovementTab = Window:CreateTab("Movement")
-    local MiscTab = Window:CreateTab("Misc")
-    
-    -- Auto Farm Tab
-    AutoFarmTab:AddLabel("Auto Farm Settings")
-    AutoFarmTab:AddDivider()
-    
-    AutoFarmTab:AddToggle({
-        Text = "Auto Farm Level",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.AutoFarm.Level = value
-        end
-    })
-    
-    AutoFarmTab:AddToggle({
-        Text = "Auto Quest",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Misc.AutoQuest = value
-        end
-    })
-    
-    AutoFarmTab:AddToggle({
-        Text = "Safe Mode (Anti-Ban)",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.AutoFarm.SafeMode = value
-        end
-    })
-    
-    AutoFarmTab:AddSlider({
-        Text = "Farm Distance",
-        Min = 5,
-        Max = 50,
-        Default = 15,
-        Increment = 5,
-        Callback = function(value)
-            BloxFruits.Settings.AutoFarm.FarmDistance = value
-        end
-    })
-    
-    AutoFarmTab:AddDivider()
-    AutoFarmTab:AddLabel("Fruit Collection")
-    AutoFarmTab:AddDivider()
-    
-    AutoFarmTab:AddToggle({
-        Text = "Auto Collect Fruits",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Misc.AutoCollectFruits = value
-        end
-    })
-    
-    -- Combat Tab
-    CombatTab:AddLabel("Combat Features")
-    CombatTab:AddDivider()
-    
-    CombatTab:AddToggle({
-        Text = "Fast Attack",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Combat.FastAttack = value
-        end
-    })
-    
-    CombatTab:AddToggle({
-        Text = "Auto Haki",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Combat.AutoHaki = value
-        end
-    })
-    
-    CombatTab:AddToggle({
-        Text = "Kill Aura",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Combat.KillAura = value
-        end
-    })
-    
-    CombatTab:AddSlider({
-        Text = "Kill Aura Range",
-        Min = 10,
-        Max = 100,
-        Default = 50,
-        Increment = 5,
-        Callback = function(value)
-            BloxFruits.Settings.Combat.KillAuraRange = value
-        end
-    })
-    
-    -- ESP Tab
-    ESPTab:AddLabel("ESP Settings")
-    ESPTab:AddDivider()
-    
-    ESPTab:AddToggle({
-        Text = "Enable ESP",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.Enabled = value
-            if not value then
-                BloxFruits:ClearESP()
-            end
-        end
-    })
-    
-    ESPTab:AddToggle({
-        Text = "Fruit ESP",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.Fruits = value
-        end
-    })
-    
-    ESPTab:AddToggle({
-        Text = "Player ESP",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.Players = value
-        end
-    })
-    
-    ESPTab:AddToggle({
-        Text = "Mob ESP",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.Mobs = value
-        end
-    })
-    
-    ESPTab:AddToggle({
-        Text = "Chest ESP",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.Chests = value
-        end
-    })
-    
-    ESPTab:AddSlider({
-        Text = "Max Distance",
-        Min = 1000,
-        Max = 10000,
-        Default = 5000,
-        Increment = 500,
-        Callback = function(value)
-            BloxFruits.Settings.ESP.MaxDistance = value
-        end
-    })
-    
-    -- Teleport Tab
-    TeleportTab:AddLabel("Teleport Settings")
-    TeleportTab:AddDivider()
-    
-    TeleportTab:AddToggle({
-        Text = "Safe Teleport (Tween)",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.Teleport.SafeTeleport = value
-        end
-    })
-    
-    TeleportTab:AddSlider({
-        Text = "Teleport Speed",
-        Min = 100,
-        Max = 500,
-        Default = 300,
-        Increment = 50,
-        Callback = function(value)
-            BloxFruits.Settings.Teleport.Speed = value
-        end
-    })
-    
-    TeleportTab:AddDivider()
-    TeleportTab:AddLabel("⚠️ Use Safe Teleport to avoid bans!")
-    
-    -- Movement Tab
-    MovementTab:AddLabel("Movement Settings")
-    MovementTab:AddDivider()
-    
-    MovementTab:AddToggle({
-        Text = "Custom Speed",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Movement.SpeedEnabled = value
-        end
-    })
-    
-    MovementTab:AddSlider({
-        Text = "Walk Speed",
-        Min = 16,
-        Max = 200,
-        Default = 16,
-        Increment = 4,
-        Callback = function(value)
-            BloxFruits.Settings.Movement.Speed = value
-        end
-    })
-    
-    MovementTab:AddToggle({
-        Text = "No Clip",
-        Default = false,
-        Callback = function(value)
-            BloxFruits.Settings.Misc.NoClip = value
-        end
-    })
-    
-    -- Misc Tab
-    MiscTab:AddLabel("Miscellaneous")
-    MiscTab:AddDivider()
-    
-    MiscTab:AddToggle({
-        Text = "Anti-AFK",
-        Default = true,
-        Callback = function(value)
-            BloxFruits.Settings.Misc.AntiAFK = value
-        end
-    })
-    
-    MiscTab:AddDivider()
-    MiscTab:AddLabel("⚠️ ANTI-CHEAT PROTECTION ACTIVE")
-    MiscTab:AddLabel("Safe Mode uses delays & tweening")
-    MiscTab:AddDivider()
-    MiscTab:AddLabel("Credits: InovoProductions")
-    MiscTab:AddLabel("Version: 1.2.0")
-    MiscTab:AddLabel("Game: Blox Fruits")
 end)
 
 end -- End of loadMainGUI function
