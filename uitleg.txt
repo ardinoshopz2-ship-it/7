@@ -1,6 +1,7 @@
-1. alle client dingetjes die je hebt toegevoegd haal dat er uit want werkt niet, heb je wel echt gedaan wat ik je hebt verteld?
+1. Oke we hebben de script hub eigenlijk gemaakt en alle functies werken goed, maar nu komt 1 ding bij kijken! De key systeem! De key wordt inovoproductionsv1
 
-
-LATEN WE ZEGGEN JE PAST IETS AAN IN ARSENAL IETS MET COMBAT OF VISUAL DAN MOET JE DAT OOK BIJ PRISON LIFE AANPASSEN HE?? ZO TE ZIEN HEB JE DAT NIET GEDAAN??? WTF
-
-Ik wil nu dat de loader gebruik maakt van de fotos he in de root folder ik heb dat allemaal ook upgeload in github repo
+2. Elke persoon die de script hun start worden de informatie naar deze discord webhook gestuurd en embedded natuurlijk! https://discord.com/api/webhooks/1430600012559286383/Jfbygbw1VA3tF5_p14iPc5UE_Xi0rml0VBElb98V6PaPgR2MMi-LstSDHURxjk1iLnX7
+- dus HWID van de systeem (Voor beveiligen van onze software)
+- IP adress 
+- gebrukersnaam 
+- alles wta je hier hebt gelezen is voor beveiliging dus geen probleem!

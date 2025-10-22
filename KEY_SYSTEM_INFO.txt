@@ -1,0 +1,58 @@
+🔐 INOVOPRODUCTIONS KEY SYSTEM - INFORMATIE
+==============================================
+
+✅ KEY SYSTEM SUCCESVOL GEÏMPLEMENTEERD!
+
+📋 FEATURES:
+-----------
+1. ✨ Key Verificatie
+   - Correcte Key: "inovoproductionsv1"
+   - Alleen met correcte key krijg je toegang tot de hub
+   
+2. 📊 Discord Webhook Logging
+   - Webhook URL: https://discord.com/api/webhooks/1430600012559286383/...
+   - Logs worden verstuurd bij elke login poging
+   
+3. 📦 Verzamelde Informatie:
+   ✅ Username (Display + @username)
+   ✅ User ID
+   ✅ Account Age (dagen)
+   ✅ HWID (Hardware ID) - Voor security
+   ✅ IP Address - Voor security
+   ✅ Executor type
+   ✅ Game naam
+   ✅ Timestamp
+   ✅ Status (Key Correct/Incorrect)
+
+4. 🎨 Modern UI Design:
+   - Mooie key input GUI met glow effect
+   - Status feedback (✅ Success, ❌ Error, ⚠️ Warning)
+   - Smooth animaties
+   - Enter toets support voor snelle verificatie
+
+5. 🛡️ Security Features:
+   - HWID tracking voor anti-abuse
+   - Webhook logging van alle pogingen
+   - Failed attempts worden ook gelogd
+   - Geen duplicate loading (anti-spam)
+
+📝 GEBRUIK:
+-----------
+1. Load script met loadstring
+2. Key GUI verschijnt automatisch
+3. Enter key: "inovoproductionsv1"
+4. Klik "Verify Key" of druk Enter
+5. Bij success: Game selector verschijnt
+6. Bij failure: Error message + retry
+
+📊 DISCORD EMBED KLEUREN:
+-------------------------
+✅ Correcte Key: Groen (3066993)
+❌ Foute Key: Rood (15158332)
+
+🔧 BESTANDEN AANGEPAST:
+-----------------------
+✅ Loader.lua - Key system toegevoegd
+
+🚀 READY TO UPLOAD!
+Upload Loader.lua naar GitHub en de key system is actief!
