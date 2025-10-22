@@ -255,7 +255,7 @@ local function verifyKey()
     end
     
     submitBtn.Text = "Verifying..."
-    submitBtn.Enabled = false
+    submitBtn.Active = false
     
     task.wait(0.5)
     
@@ -279,7 +279,7 @@ local function verifyKey()
         sendToWebhook(false)
         
         submitBtn.Text = "Verify Key"
-        submitBtn.Enabled = true
+        submitBtn.Active = true
         keyInput.Text = ""
     end
 end
