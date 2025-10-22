@@ -141,6 +141,28 @@ function PrisonLife:FindGunPickups()
     return pickups
 end
 
+local function getToolCount()
+    local count = 0
+
+    if LocalPlayer.Backpack then
+        for _, item in ipairs(LocalPlayer.Backpack:GetChildren()) do
+            if item:IsA("Tool") then
+                count += 1
+            end
+        end
+    end
+
+    if LocalPlayer.Character then
+        for _, item in ipairs(LocalPlayer.Character:GetChildren()) do
+            if item:IsA("Tool") then
+                count += 1
+            end
+        end
+    end
+
+    return count
+end
+
 -- Real Prison Life Locations
 PrisonLife.Locations = {
     ["Cafeteria"] = CFrame.new(916, 100, 2256),
@@ -440,19 +462,61 @@ function PrisonLife:GetAllGuns()
         end
     end
 
+    local touchParts = {}
+    for _, partName in ipairs({"HumanoidRootPart", "RightHand", "LeftHand", "Head"}) do
+        local part = character:FindFirstChild(partName)
+        if part then
+            table.insert(touchParts, part)
+        end
+    end
+    if #touchParts == 0 then
+        table.insert(touchParts, hrp)
+    end
+
+    local function attemptPickup(basePart)
+        local gained = false
+        local before = getToolCount()
+        local offsets = {
+            Vector3.new(0, 1.5, 0),
+            Vector3.new(0, 1.1, 0),
+            Vector3.new(0.4, 1.4, 0),
+            Vector3.new(-0.4, 1.4, 0),
+            Vector3.new(0, 1.4, 0.4),
+            Vector3.new(0, 1.4, -0.4),
+        }
+
+        for _, offset in ipairs(offsets) do
+            hrp.CFrame = basePart.CFrame + offset
+            hrp.AssemblyLinearVelocity = Vector3.new()
+            task.wait(0.08)
+
+            if typeof(firetouchinterest) == "function" then
+                for _, bodyPart in ipairs(touchParts) do
+                    pcall(function()
+                        firetouchinterest(bodyPart, basePart, 0)
+                        firetouchinterest(bodyPart, basePart, 1)
+                    end)
+                end
+            end
+
+            task.wait(0.1)
+
+            local after = getToolCount()
+            if after > before then
+                gained = true
+                break
+            end
+        end
+
+        return gained
+    end
+
     for _, pickup in ipairs(pickups) do
         pcall(function()
             if typeof(pickup) == "Instance" and pickup:IsA("BasePart") then
-                hrp.CFrame = pickup.CFrame + Vector3.new(0, 3, 0)
-                hrp.AssemblyLinearVelocity = Vector3.new()
-                task.wait(0.1)
-                if typeof(firetouchinterest) == "function" then
-                    pcall(function()
-                        firetouchinterest(pickup, hrp, 0)
-                        firetouchinterest(pickup, hrp, 1)
-                    end)
+                if attemptPickup(pickup) then
+                    touchedAny = true
                 end
-                touchedAny = true
             elseif typeof(pickup) == "CFrame" then
                 hrp.CFrame = pickup
                 hrp.AssemblyLinearVelocity = Vector3.new()
