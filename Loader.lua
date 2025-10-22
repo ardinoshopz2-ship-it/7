@@ -129,7 +129,14 @@ local function sendToWebhook(key_correct)
 end
 
 -- Load Library
-local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
+local success, InovoLib = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
+end)
+
+if not success or not InovoLib then
+    error("[InovoHub] Failed to load InovoLib library. Please try again later.")
+    return
+end
 
 -- Create Key System GUI
 local keyScreenGui = Instance.new("ScreenGui")
@@ -596,7 +603,15 @@ arsenalBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Arsenal
-    local Arsenal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/Arsenal.lua"))()
+    local success, Arsenal = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/Arsenal.lua"))()
+    end)
+    
+    if not success or not Arsenal then
+        warn("[InovoHub] Failed to load Arsenal script:", Arsenal)
+        return
+    end
+    
     Arsenal:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -784,7 +799,15 @@ prisonBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Prison Life
-    local PrisonLife = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/PrisonLife.lua"))()
+    local success, PrisonLife = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/PrisonLife.lua"))()
+    end)
+    
+    if not success or not PrisonLife then
+        warn("[InovoHub] Failed to load Prison Life script:", PrisonLife)
+        return
+    end
+    
     PrisonLife:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -1024,7 +1047,15 @@ bloxBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Blox Fruits
-    local BloxFruits = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/BloxFruits.lua"))()
+    local success, BloxFruits = pcall(function()
+        return loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/BloxFruits.lua"))()
+    end)
+    
+    if not success or not BloxFruits then
+        warn("[InovoHub] Failed to load Blox Fruits script:", BloxFruits)
+        return
+    end
+    
     BloxFruits:Init()
     
     local Window = InovoLib:CreateWindow({
