@@ -1,0 +1,4 @@
+1. haal FOV voor camera uit
+2. bij teamcheck bij combat en visuals heb je esp en aimbotr haal dat text wegdus er staat teamcheck en bij combat is het aimbot en bij visuals esp
+3. Voeg meer aim part opties
+4. wat kan je meer toevoegen voor client side :)

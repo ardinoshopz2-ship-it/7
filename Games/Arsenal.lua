@@ -75,9 +75,9 @@ Arsenal.Settings = {
         Enabled = false,
         Method = "Kills", -- Kills, Coins
     },
-    Camera = {
-        CustomFOV = false,
-        FieldOfView = DefaultFOV,
+    Misc = {
+        NoFallDamage = false,
+        AutoRespawn = false,
     },
 }
 
@@ -291,13 +291,28 @@ function Arsenal:CreateFOVCircle()
     FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
 end
 
-function Arsenal:UpdateCamera()
-    if not Camera then return end
-    
-    if self.Settings.Camera.CustomFOV then
-        Camera.FieldOfView = math.clamp(self.Settings.Camera.FieldOfView or DefaultFOV, 40, 120)
-    elseif Camera.FieldOfView ~= OriginalFOV then
-        Camera.FieldOfView = OriginalFOV
+-- Misc Functions
+function Arsenal:UpdateMisc()
+    if LocalPlayer.Character then
+        -- No Fall Damage
+        if self.Settings.Misc.NoFallDamage then
+            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid then
+                local falling = humanoid:GetState() == Enum.HumanoidStateType.Freefall
+                if falling then
+                    humanoid:ChangeState(Enum.HumanoidStateType.Landed)
+                end
+            end
+        end
+        
+        -- Auto Respawn
+        if self.Settings.Misc.AutoRespawn then
+            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid and humanoid.Health <= 0 then
+                task.wait(0.1)
+                LocalPlayer.Character:BreakJoints()
+            end
+        end
     end
 end
 
@@ -442,7 +457,7 @@ function Arsenal:Init()
             end
             
             pcall(function()
-                self:UpdateCamera()
+                self:UpdateMisc()
             end)
         end)
         

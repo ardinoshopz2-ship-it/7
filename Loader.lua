@@ -292,7 +292,7 @@ arsenalBtn.MouseButton1Click:Connect(function()
     })
     
     CombatTab:AddToggle({
-        Text = "Team Check (Aimbot)",
+        Text = "Team Check",
         Default = true,
         Callback = function(value)
             Arsenal.Settings.Aimbot.TeamCheckAimbot = value
@@ -339,7 +339,7 @@ arsenalBtn.MouseButton1Click:Connect(function()
     
     CombatTab:AddDropdown({
         Text = "Aim Part",
-        Items = {"Head", "HumanoidRootPart", "Torso"},
+        Items = {"Head", "HumanoidRootPart", "Torso", "UpperTorso", "LowerTorso", "LeftArm", "RightArm", "LeftLeg", "RightLeg"},
         Default = "Head",
         Callback = function(value)
             Arsenal.Settings.Aimbot.AimPart = value
@@ -391,7 +391,7 @@ arsenalBtn.MouseButton1Click:Connect(function()
     })
     
     VisualsTab:AddToggle({
-        Text = "Team Check (ESP)",
+        Text = "Team Check",
         Default = true,
         Callback = function(value)
             Arsenal.Settings.ESP.TeamCheckESP = value
@@ -504,31 +504,77 @@ arsenalBtn.MouseButton1Click:Connect(function()
     })
     
     -- Misc Tab
-    MiscTab:AddLabel("Camera Settings")
+    MiscTab:AddLabel("Combat Features")
     MiscTab:AddDivider()
-
+    
     MiscTab:AddToggle({
-        Text = "Custom Field of View",
+        Text = "Infinite Ammo",
         Default = false,
         Callback = function(value)
-            Arsenal.Settings.Camera.CustomFOV = value
+            Arsenal.Settings.Combat.InfiniteAmmo = value
         end
     })
-
-    MiscTab:AddSlider({
-        Text = "Field of View",
-        Min = 40,
-        Max = 120,
-        Default = 70,
-        Increment = 1,
+    
+    MiscTab:AddToggle({
+        Text = "No Recoil",
+        Default = false,
         Callback = function(value)
-            Arsenal.Settings.Camera.FieldOfView = value
+            Arsenal.Settings.Combat.NoRecoil = value
+        end
+    })
+    
+    MiscTab:AddToggle({
+        Text = "Rapid Fire",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.Combat.RapidFire = value
+        end
+    })
+    
+    MiscTab:AddDivider()
+    MiscTab:AddLabel("Other Features")
+    MiscTab:AddDivider()
+    
+    MiscTab:AddToggle({
+        Text = "No Fall Damage",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.Misc = Arsenal.Settings.Misc or {}
+            Arsenal.Settings.Misc.NoFallDamage = value
+        end
+    })
+    
+    MiscTab:AddToggle({
+        Text = "Auto Respawn",
+        Default = false,
+        Callback = function(value)
+            Arsenal.Settings.Misc = Arsenal.Settings.Misc or {}
+            Arsenal.Settings.Misc.AutoRespawn = value
+        end
+    })
+    
+    MiscTab:AddButton({
+        Text = "Remove Kill Barriers",
+        Callback = function()
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Part") and v.Name == "DeathBarrier" or v.Name == "KillBrick" then
+                    v:Destroy()
+                end
+            end
+        end
+    })
+    
+    MiscTab:AddButton({
+        Text = "Unlock First Person",
+        Callback = function()
+            game.Players.LocalPlayer.CameraMaxZoomDistance = 0.5
+            game.Players.LocalPlayer.CameraMinZoomDistance = 0.5
         end
     })
 
     MiscTab:AddDivider()
     MiscTab:AddLabel("Credits: InovoProductions")
-    MiscTab:AddLabel("Version: 1.0.0")
+    MiscTab:AddLabel("Version: 1.1.0")
 end)
 
 -- Prison Life Click

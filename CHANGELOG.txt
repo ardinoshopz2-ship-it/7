@@ -1,0 +1,56 @@
+=== InovoProductions Script Hub - CHANGELOG v1.1.0 ===
+
+✅ ALLE AANPASSINGEN VOLTOOID:
+
+1. ❌ FOV CAMERA VERWIJDERD
+   - "Custom Field of View" sectie volledig verwijderd uit Misc tab
+   - UpdateCamera() functie verwijderd uit Arsenal.lua
+   - Camera.FieldOfView code verwijderd
+
+2. ✏️ TEAM CHECK TEXT OPGESCHOOND
+   - Arsenal Combat: "Team Check (Aimbot)" → "Team Check"
+   - Arsenal Visuals: "Team Check (ESP)" → "Team Check"
+   - Prison Life: Was al correct
+   - Nu veel cleaner en duidelijker!
+
+3. 🎯 MEER AIM PART OPTIES
+   - Arsenal Aim Parts uitgebreid:
+     * Head
+     * HumanoidRootPart
+     * Torso
+     * UpperTorso (nieuw!)
+     * LowerTorso (nieuw!)
+     * LeftArm (nieuw!)
+     * RightArm (nieuw!)
+     * LeftLeg (nieuw!)
+     * RightLeg (nieuw!)
+   - 9 opties in totaal voor maximale precisie!
+
+4. 🚀 NIEUWE CLIENT-SIDE FEATURES (Misc Tab Arsenal)
+   
+   Combat Features:
+   ✨ Infinite Ammo - Oneindig munitie
+   ✨ No Recoil - Geen terugslag
+   ✨ Rapid Fire - Sneller vuren
+   
+   Other Features:
+   ✨ No Fall Damage - Geen valschade
+   ✨ Auto Respawn - Automatisch respawnen na dood
+   ✨ Remove Kill Barriers - Verwijder death barriers
+   ✨ Unlock First Person - Force first person camera
+   
+   Nieuwe UpdateMisc() functie toegevoegd voor realtime updates!
+
+5. 🔧 EERDERE FIXES (al gedaan):
+   ✅ FOV Circle werkt nu altijd (niet alleen in menu)
+   ✅ Dropdown size vergroot (120px → 200px)
+   ✅ Dropdown ClipsDescendants = false
+   ✅ ZIndex verhoogd voor dropdown items (100+)
+
+===================================
+
+Version: 1.1.0
+Datum: 2025-10-22
+Credits: InovoProductions
+
+READY TO UPLOAD TO GITHUB!
