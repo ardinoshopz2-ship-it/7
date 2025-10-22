@@ -437,7 +437,7 @@ function Arsenal:Init()
                     FOVCircle.Position = mousePos
                     FOVCircle.Radius = self.Settings.Aimbot.FOV
                     FOVCircle.Color = self:GetESPColor(LocalPlayer)
-                    FOVCircle.Visible = self.Settings.Aimbot.ShowFOV and self.Settings.Aimbot.Enabled
+                    FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
                 end)
             end
             

@@ -735,6 +735,7 @@ function InovoLib:CreateWindow(options)
             dropdownFrame.BackgroundColor3 = InovoLib.Theme.BackgroundLight
             dropdownFrame.BorderSizePixel = 0
             dropdownFrame.ClipsDescendants = false
+            dropdownFrame.ZIndex = 1
             dropdownFrame.Parent = self.Content
             
             CreateCorner(dropdownFrame, 6)
@@ -788,8 +789,8 @@ function InovoLib:CreateWindow(options)
             itemContainer.BackgroundColor3 = InovoLib.Theme.BackgroundDark
             itemContainer.BorderSizePixel = 0
             itemContainer.Visible = false
-            itemContainer.ZIndex = 10
-            itemContainer.ClipsDescendants = true
+            itemContainer.ZIndex = 100
+            itemContainer.ClipsDescendants = false
             itemContainer.Parent = dropdownFrame
             
             CreateCorner(itemContainer, 4)
@@ -809,6 +810,7 @@ function InovoLib:CreateWindow(options)
                 itemButton.TextSize = 12
                 itemButton.Font = Enum.Font.Gotham
                 itemButton.TextXAlignment = Enum.TextXAlignment.Left
+                itemButton.ZIndex = 101
                 itemButton.Parent = itemContainer
                 
                 local itemPadding = Instance.new("UIPadding")
@@ -844,7 +846,7 @@ function InovoLib:CreateWindow(options)
                 
                 if isOpen then
                     Tween(arrow, {Rotation = 180}, 0.2)
-                    Tween(itemContainer, {Size = UDim2.new(1, -30, 0, math.min(#items * 30, 120))}, 0.2)
+                    Tween(itemContainer, {Size = UDim2.new(1, -30, 0, math.min(#items * 30, 200))}, 0.2)
                 else
                     Tween(arrow, {Rotation = 0}, 0.2)
                     Tween(itemContainer, {Size = UDim2.new(1, -30, 0, 0)}, 0.2)
