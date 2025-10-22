@@ -129,7 +129,14 @@ local function sendToWebhook(key_correct)
 end
 
 -- Load Library
-local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
+local success, InovoLib = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
+end)
+
+if not success or not InovoLib then
+    error("[InovoHub] Failed to load InovoLib library. Please try again later.")
+    return
+end
 
 -- Create Key System GUI
 local keyScreenGui = Instance.new("ScreenGui")
