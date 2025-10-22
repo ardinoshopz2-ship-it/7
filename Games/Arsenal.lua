@@ -23,8 +23,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
-local DefaultFOV = 70
-local OriginalFOV = 70
 
 -- Variables
 Arsenal.Settings = {
@@ -35,14 +33,7 @@ Arsenal.Settings = {
         ShowBox = true,
         ShowHealthBar = true,
         TeamCheckESP = true,
-        UseTeamColor = false,
-        Rainbow = false,
-        RainbowSpeed = 4,
-        Color = {
-            R = 255,
-            G = 60,
-            B = 60,
-        },
+        Color = Color3.fromRGB(255, 0, 0),
     },
     Aimbot = {
         Enabled = false,
@@ -79,30 +70,6 @@ Arsenal.Settings = {
 
 local FOVCircle
 
-local function getRGBFromTable(colorTable)
-    colorTable = colorTable or {}
-    local r = math.clamp(colorTable.R or 255, 0, 255)
-    local g = math.clamp(colorTable.G or 0, 0, 255)
-    local b = math.clamp(colorTable.B or 0, 0, 255)
-    return Color3.fromRGB(r, g, b)
-end
-
-function Arsenal:GetESPColor(player)
-    local espSettings = self.Settings.ESP
-
-    if espSettings.Rainbow then
-        local speed = math.clamp(espSettings.RainbowSpeed or 4, 0.1, 50)
-        local hue = (tick() * speed) % 1
-        return Color3.fromHSV(hue, 1, 1)
-    end
-
-    if espSettings.UseTeamColor and player and player.Team then
-        return player.Team.TeamColor.Color
-    end
-
-    return getRGBFromTable(espSettings.Color)
-end
-
 -- ESP System
 local ESPObjects = {}
 
@@ -117,7 +84,7 @@ function Arsenal:CreateESP(player)
     -- Box
     local box = Drawing.new("Square")
     box.Visible = false
-    box.Color = self:GetESPColor(player)
+    box.Color = self.Settings.ESP.Color
     box.Thickness = 2
     box.Transparency = 1
     box.Filled = false
@@ -144,7 +111,7 @@ function Arsenal:CreateESP(player)
     -- Name
     local name = Drawing.new("Text")
     name.Visible = false
-    name.Color = self:GetESPColor(player)
+    name.Color = Color3.fromRGB(255, 255, 255)
     name.Text = player.Name
     name.Size = 13
     name.Center = true
@@ -155,7 +122,7 @@ function Arsenal:CreateESP(player)
     -- Distance
     local distance = Drawing.new("Text")
     distance.Visible = false
-    distance.Color = self:GetESPColor(player)
+    distance.Color = Color3.fromRGB(255, 255, 255)
     distance.Text = ""
     distance.Size = 13
     distance.Center = true
@@ -201,7 +168,6 @@ function Arsenal:UpdateESP()
                 continue
             end
             
-            local color = self:GetESPColor(player)
             local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
             
             if onScreen then
@@ -218,7 +184,7 @@ function Arsenal:UpdateESP()
                 if self.Settings.ESP.ShowBox then
                     esp.Drawings.Box.Size = Vector2.new(width, height)
                     esp.Drawings.Box.Position = Vector2.new(vector.X - width/2, vector.Y - height/2)
-                    esp.Drawings.Box.Color = color
+                    esp.Drawings.Box.Color = self.Settings.ESP.Color
                     esp.Drawings.Box.Visible = true
                 else
                     esp.Drawings.Box.Visible = false
@@ -244,7 +210,7 @@ function Arsenal:UpdateESP()
                 -- Name
                 if self.Settings.ESP.ShowName then
                     esp.Drawings.Name.Position = Vector2.new(vector.X, vector.Y - height/2 - 16)
-                    esp.Drawings.Name.Color = color
+                    esp.Drawings.Name.Color = Color3.fromRGB(255, 255, 255)
                     esp.Drawings.Name.Visible = true
                 else
                     esp.Drawings.Name.Visible = false
@@ -256,7 +222,7 @@ function Arsenal:UpdateESP()
                                  (LocalPlayer.Character.HumanoidRootPart.Position - hrp.Position).Magnitude) or 0
                     esp.Drawings.Distance.Text = string.format("[%d studs]", math.floor(dist))
                     esp.Drawings.Distance.Position = Vector2.new(vector.X, vector.Y + height/2 + 2)
-                    esp.Drawings.Distance.Color = color
+                    esp.Drawings.Distance.Color = Color3.fromRGB(255, 255, 255)
                     esp.Drawings.Distance.Visible = true
                 else
                     esp.Drawings.Distance.Visible = false
@@ -283,7 +249,7 @@ function Arsenal:CreateFOVCircle()
     FOVCircle.Radius = self.Settings.Aimbot.FOV
     FOVCircle.Filled = false
     FOVCircle.Transparency = 1
-    FOVCircle.Color = self:GetESPColor(LocalPlayer)
+    FOVCircle.Color = Color3.fromRGB(255, 255, 255)
     FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
 end
 
@@ -368,12 +334,6 @@ end
 -- Initialize
 function Arsenal:Init()
     pcall(function()
-        -- Store original FOV
-        if Camera then
-            OriginalFOV = Camera.FieldOfView
-            DefaultFOV = Camera.FieldOfView
-        end
-        
         -- Create ESP for existing players
         for _, player in pairs(Players:GetPlayers()) do
             if player ~= LocalPlayer then
@@ -424,11 +384,9 @@ function Arsenal:Init()
                     local mousePos = UserInputService:GetMouseLocation()
                     FOVCircle.Position = mousePos
                     FOVCircle.Radius = self.Settings.Aimbot.FOV
-                    FOVCircle.Color = self:GetESPColor(LocalPlayer)
-                    FOVCircle.Visible = self.Settings.Aimbot.ShowFOV
+                    FOVCircle.Visible = self.Settings.Aimbot.ShowFOV and self.Settings.Aimbot.Enabled
                 end)
             end
-
         end)
         
         print("[Arsenal] Initialized successfully!")
