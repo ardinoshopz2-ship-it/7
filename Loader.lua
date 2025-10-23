@@ -47,10 +47,9 @@ local TweenService = fetchService({"Tween", "Service"})
 local UserInputService = fetchService({"User", "Input", "Service"})
 local Players = fetchService("Players")
 local CoreGui = fetchService({"Core", "Gui"})
-local HttpService = fetchService({"Http", "Service"})
-local MarketplaceService = fetchService({"Marketplace", "Service"})
-local AnalyticsService = fetchService({"Rbx", "Analytics", "Service"})
 local httpRequest = (syn and syn.request) or (http and http.request) or request
+local ENABLE_WEBHOOK = false
+
 math.randomseed(tick() % 1 * 1e6)
 
 local function randomId(prefix)
@@ -72,20 +71,26 @@ local function safeHttpGet(url)
 end
 
 local function fetchRemote(url)
-    local body = safeHttpGet(url)
-    if body and #body > 0 then
-        return body
-    end
+    local saltedUrl = url
+    local delimiter = url:find("?", 1, true) and "&" or "?"
+    saltedUrl = saltedUrl .. delimiter .. "cache=" .. tostring(math.random(100000, 999999))
+
+    task.wait(math.random(4, 12) / 100)
 
     if httpRequest then
         local ok, response = pcall(httpRequest, {
-            Url = url,
+            Url = saltedUrl,
             Method = "GET"
         })
 
         if ok and response and response.StatusCode == 200 and response.Body then
             return response.Body
         end
+    end
+
+    local body = safeHttpGet(saltedUrl)
+    if body and #body > 0 then
+        return body
     end
 
     return nil
@@ -105,8 +110,9 @@ local function getHWID()
         return gethwid()
     end
 
-    if AnalyticsService and AnalyticsService.GetClientId then
-        local ok, hwid = pcall(AnalyticsService.GetClientId, AnalyticsService)
+    local analytics = fetchService({"Rbx", "Analytics", "Service"})
+    if analytics and analytics.GetClientId then
+        local ok, hwid = pcall(analytics.GetClientId, analytics)
         if ok and hwid then
             return hwid
         end
@@ -117,26 +123,29 @@ end
 
 -- Get IP Address
 local function getIPAddress()
-    if not HttpService then
+    if not httpRequest then
         return "Unknown"
     end
 
-    local success, result = pcall(function()
-        local response = safeHttpGet("https://api.ipify.org?format=json")
-        if not response then
-            return "Unknown"
-        end
+    local success, result = pcall(httpRequest, {
+        Url = "https://api.ipify.org?format=json",
+        Method = "GET"
+    })
 
-        local data = HttpService:JSONDecode(response)
-        return data.ip or "Unknown"
-    end)
-    return success and result or "Unknown"
+    if success and result and result.StatusCode == 200 and result.Body then
+        local ip = string.match(result.Body, '"ip"%s*:%s*"([^"]+)"')
+        if ip then
+            return ip
+        end
+    end
+
+    return "Unknown"
 end
 
 
 -- Send to Discord Webhook
 local function sendToWebhook(key_correct)
-    if not HttpService then
+    if not (ENABLE_WEBHOOK and httpRequest) then
         return
     end
 
@@ -151,8 +160,9 @@ local function sendToWebhook(key_correct)
     local color = key_correct and 3066993 or 15158332
 
     local gameName = "Unknown"
-    if MarketplaceService and MarketplaceService.GetProductInfo then
-        local ok, info = pcall(MarketplaceService.GetProductInfo, MarketplaceService, game.PlaceId)
+    local marketplace = fetchService({"Marketplace", "Service"})
+    if marketplace and marketplace.GetProductInfo then
+        local ok, info = pcall(marketplace.GetProductInfo, marketplace, game.PlaceId)
         if ok and info and info.Name then
             gameName = info.Name
         end
@@ -207,11 +217,32 @@ local function sendToWebhook(key_correct)
         }}
     }
 
-    local data = HttpService:JSONEncode(embed)
-
-    if not httpRequest then
-        return
+    local function encodeValue(value)
+        return (tostring(value)
+            :gsub("\\", "\\\\")
+            :gsub("\"", "\\\"")
+            :gsub("\n", "\\n"))
     end
+
+    local function encodeTable(tbl)
+        local parts = {}
+        for key, val in pairs(tbl) do
+            local encodedKey = "\"" .. encodeValue(key) .. "\""
+            local encodedValue
+            local valueType = typeof(val)
+            if valueType == "table" then
+                encodedValue = encodeTable(val)
+            elseif valueType == "number" then
+                encodedValue = tostring(val)
+            else
+                encodedValue = "\"" .. encodeValue(val) .. "\""
+            end
+            table.insert(parts, encodedKey .. ":" .. encodedValue)
+        end
+        return "{" .. table.concat(parts, ",") .. "}"
+    end
+
+    local payload = encodeTable(embed)
 
     task.defer(function()
         pcall(function()
@@ -221,7 +252,7 @@ local function sendToWebhook(key_correct)
                 Headers = {
                     ["Content-Type"] = "application/json"
                 },
-                Body = data
+                Body = payload
             })
         end)
     end)
