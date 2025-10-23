@@ -205,8 +205,8 @@ keyScreenGui.Parent = CoreGui
 
 local keyFrame = Instance.new("Frame")
 keyFrame.Name = "KeyFrame"
-keyFrame.Size = UDim2.new(0, 400, 0, 250)
-keyFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+keyFrame.Size = UDim2.new(0, 480, 0, 280)
+keyFrame.Position = UDim2.new(0.5, -240, 0.5, -140)
 keyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 keyFrame.BorderSizePixel = 0
 keyFrame.Parent = keyScreenGui
@@ -215,93 +215,172 @@ local keyCorner = Instance.new("UICorner")
 keyCorner.CornerRadius = UDim.new(0, 12)
 keyCorner.Parent = keyFrame
 
--- Glow Effect
-local glowFrame = Instance.new("Frame")
-glowFrame.Size = UDim2.new(1, 4, 1, 4)
-glowFrame.Position = UDim2.new(0, -2, 0, -2)
-glowFrame.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-glowFrame.BackgroundTransparency = 0.7
-glowFrame.BorderSizePixel = 0
-glowFrame.ZIndex = 0
-glowFrame.Parent = keyFrame
+local keyAccent = Instance.new("Frame")
+keyAccent.Size = UDim2.new(1, 0, 0, 4)
+keyAccent.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+keyAccent.BorderSizePixel = 0
+keyAccent.Parent = keyFrame
 
-local glowCorner = Instance.new("UICorner")
-glowCorner.CornerRadius = UDim.new(0, 12)
-glowCorner.Parent = glowFrame
+local keyHeader = Instance.new("Frame")
+keyHeader.Size = UDim2.new(1, 0, 0, 60)
+keyHeader.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
+keyHeader.BorderSizePixel = 0
+keyHeader.Parent = keyFrame
 
--- Title
+local keyHeaderCorner = Instance.new("UICorner")
+keyHeaderCorner.CornerRadius = UDim.new(0, 12)
+keyHeaderCorner.Parent = keyHeader
+
+local keyHeaderPadding = Instance.new("UIPadding")
+keyHeaderPadding.PaddingLeft = UDim.new(0, 20)
+keyHeaderPadding.PaddingRight = UDim.new(0, 60)
+keyHeaderPadding.Parent = keyHeader
+
 local keyTitle = Instance.new("TextLabel")
-keyTitle.Size = UDim2.new(1, 0, 0, 60)
-keyTitle.Position = UDim2.new(0, 0, 0, 0)
+keyTitle.Size = UDim2.new(1, 0, 1, 0)
 keyTitle.BackgroundTransparency = 1
-keyTitle.Text = "🔐 InovoProductions"
+keyTitle.Text = "InovoProductions - Key System"
 keyTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyTitle.TextSize = 24
+keyTitle.TextSize = 20
 keyTitle.Font = Enum.Font.GothamBold
-keyTitle.Parent = keyFrame
+keyTitle.TextXAlignment = Enum.TextXAlignment.Left
+keyTitle.Parent = keyHeader
+
+local keyCloseBtn = Instance.new("TextButton")
+keyCloseBtn.Size = UDim2.new(0, 40, 0, 40)
+keyCloseBtn.Position = UDim2.new(1, -50, 0, 10)
+keyCloseBtn.BackgroundColor3 = Color3.fromRGB(240, 71, 71)
+keyCloseBtn.BorderSizePixel = 0
+keyCloseBtn.Text = "X"
+keyCloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+keyCloseBtn.TextSize = 18
+keyCloseBtn.Font = Enum.Font.GothamBold
+keyCloseBtn.Parent = keyHeader
+
+local keyCloseCorner = Instance.new("UICorner")
+keyCloseCorner.CornerRadius = UDim.new(0, 8)
+keyCloseCorner.Parent = keyCloseBtn
+
+keyCloseBtn.MouseButton1Click:Connect(function()
+    _G.InovoLoaded = nil
+    keyScreenGui:Destroy()
+end)
+local keyContent = Instance.new("Frame")
+keyContent.Size = UDim2.new(1, -40, 1, -100)
+keyContent.Position = UDim2.new(0, 20, 0, 80)
+keyContent.BackgroundTransparency = 1
+keyContent.Parent = keyFrame
 
 local keySubtitle = Instance.new("TextLabel")
-keySubtitle.Size = UDim2.new(1, 0, 0, 30)
-keySubtitle.Position = UDim2.new(0, 0, 0, 50)
+keySubtitle.Size = UDim2.new(1, 0, 0, 24)
 keySubtitle.BackgroundTransparency = 1
-keySubtitle.Text = "Enter your access key"
-keySubtitle.TextColor3 = Color3.fromRGB(180, 180, 190)
+keySubtitle.Text = "Voer je toegangscode in om verder te gaan."
+keySubtitle.TextColor3 = Color3.fromRGB(190, 190, 200)
 keySubtitle.TextSize = 14
 keySubtitle.Font = Enum.Font.Gotham
-keySubtitle.Parent = keyFrame
+keySubtitle.TextXAlignment = Enum.TextXAlignment.Left
+keySubtitle.Parent = keyContent
 
--- Key Input
+local keyHelp = Instance.new("TextLabel")
+keyHelp.Size = UDim2.new(1, 0, 0, 20)
+keyHelp.Position = UDim2.new(0, 0, 0, 26)
+keyHelp.BackgroundTransparency = 1
+keyHelp.Text = "Geen key? Ga naar onze Discord voor meer informatie."
+keyHelp.TextColor3 = Color3.fromRGB(120, 120, 135)
+keyHelp.TextSize = 13
+keyHelp.Font = Enum.Font.Gotham
+keyHelp.TextXAlignment = Enum.TextXAlignment.Left
+keyHelp.Parent = keyContent
+
+local keyDragging = false
+local keyDragInput, keyMousePos, keyFramePos
+
+keyHeader.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        keyDragging = true
+        keyMousePos = input.Position
+        keyFramePos = keyFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                keyDragging = false
+            end
+        end)
+    end
+end)
+
+keyHeader.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        keyDragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == keyDragInput and keyDragging then
+        local delta = input.Position - keyMousePos
+        keyFrame.Position = UDim2.new(
+            keyFramePos.X.Scale,
+            keyFramePos.X.Offset + delta.X,
+            keyFramePos.Y.Scale,
+            keyFramePos.Y.Offset + delta.Y
+        )
+    end
+end)
+
 local keyInput = Instance.new("TextBox")
-keyInput.Size = UDim2.new(1, -60, 0, 45)
-keyInput.Position = UDim2.new(0, 30, 0, 100)
-keyInput.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+keyInput.Size = UDim2.new(1, 0, 0, 45)
+keyInput.Position = UDim2.new(0, 0, 0, 70)
+keyInput.BackgroundColor3 = Color3.fromRGB(25, 25, 32)
 keyInput.BorderSizePixel = 0
 keyInput.Text = ""
-keyInput.PlaceholderText = "Enter key here..."
+keyInput.PlaceholderText = "Voer jouw key in"
 keyInput.TextColor3 = Color3.fromRGB(255, 255, 255)
-keyInput.PlaceholderColor3 = Color3.fromRGB(100, 100, 110)
+keyInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 135)
 keyInput.TextSize = 16
 keyInput.Font = Enum.Font.GothamSemibold
 keyInput.ClearTextOnFocus = false
-keyInput.Parent = keyFrame
+keyInput.Parent = keyContent
 
 local keyInputCorner = Instance.new("UICorner")
 keyInputCorner.CornerRadius = UDim.new(0, 8)
 keyInputCorner.Parent = keyInput
+
+local keyInputStroke = Instance.new("UIStroke")
+keyInputStroke.Color = Color3.fromRGB(60, 60, 75)
+keyInputStroke.Thickness = 1
+keyInputStroke.Parent = keyInput
 
 local keyInputPadding = Instance.new("UIPadding")
 keyInputPadding.PaddingLeft = UDim.new(0, 15)
 keyInputPadding.PaddingRight = UDim.new(0, 15)
 keyInputPadding.Parent = keyInput
 
--- Submit Button
 local submitBtn = Instance.new("TextButton")
-submitBtn.Size = UDim2.new(1, -60, 0, 45)
-submitBtn.Position = UDim2.new(0, 30, 0, 165)
+submitBtn.Size = UDim2.new(1, 0, 0, 45)
+submitBtn.Position = UDim2.new(0, 0, 0, 130)
 submitBtn.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
 submitBtn.BorderSizePixel = 0
 submitBtn.Text = "Verify Key"
 submitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitBtn.TextSize = 16
 submitBtn.Font = Enum.Font.GothamBold
-submitBtn.Parent = keyFrame
+submitBtn.Parent = keyContent
 
 local submitBtnCorner = Instance.new("UICorner")
 submitBtnCorner.CornerRadius = UDim.new(0, 8)
 submitBtnCorner.Parent = submitBtn
 
--- Status Label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, 0, 0, 20)
-statusLabel.Position = UDim2.new(0, 0, 0, 220)
+statusLabel.Position = UDim2.new(0, 0, 0, 185)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = ""
 statusLabel.TextColor3 = Color3.fromRGB(240, 71, 71)
 statusLabel.TextSize = 12
 statusLabel.Font = Enum.Font.Gotham
-statusLabel.Parent = keyFrame
+statusLabel.TextXAlignment = Enum.TextXAlignment.Left
+statusLabel.Parent = keyContent
 
--- Button Hover
 submitBtn.MouseEnter:Connect(function()
     TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}):Play()
 end)
@@ -309,14 +388,13 @@ end)
 submitBtn.MouseLeave:Connect(function()
     TweenService:Create(submitBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
 end)
-
 -- Key Verification
 local function verifyKey()
     local enteredKey = keyInput.Text
     
     if enteredKey == "" then
         statusLabel.TextColor3 = Color3.fromRGB(250, 166, 26)
-        statusLabel.Text = "⚠️ Please enter a key"
+        statusLabel.Text = "Voer eerst een key in."
         return
     end
     
@@ -327,7 +405,7 @@ local function verifyKey()
     
     if enteredKey == CORRECT_KEY then
         statusLabel.TextColor3 = Color3.fromRGB(67, 181, 129)
-        statusLabel.Text = "✅ Key verified! Loading..."
+        statusLabel.Text = "Key geaccepteerd! Laden..."
         
         -- Send success webhook
         sendToWebhook(true)
@@ -339,7 +417,7 @@ local function verifyKey()
         loadMainGUI()
     else
         statusLabel.TextColor3 = Color3.fromRGB(240, 71, 71)
-        statusLabel.Text = "❌ Invalid key! Please try again."
+        statusLabel.Text = "Ongeldige key, probeer opnieuw."
         
         -- Send failed webhook
         sendToWebhook(false)

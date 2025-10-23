@@ -21,7 +21,6 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
-local ProximityPromptService = game:GetService("ProximityPromptService")
 local VirtualUser = game:GetService("VirtualUser")
 
 local LocalPlayer = Players.LocalPlayer
@@ -29,6 +28,63 @@ local Camera = Workspace.CurrentCamera
 
 local firePrompt = fireproximityprompt
 local fireTouch = firetouchinterest
+
+local LightingPropertyAliases = {
+    ColorShiftTop = "ColorShift_Top",
+    ColorShiftBottom = "ColorShift_Bottom",
+}
+
+local LightingTrackedProperties = {
+    "Brightness",
+    "ClockTime",
+    "Ambient",
+    "OutdoorAmbient",
+    "FogEnd",
+    "ColorShiftTop",
+    "ColorShiftBottom",
+}
+
+local function getLightingValue(prop)
+    local success, value = pcall(function()
+        return Lighting[prop]
+    end)
+    if success then
+        return value, prop
+    end
+
+    local alias = LightingPropertyAliases[prop]
+    if alias then
+        success, value = pcall(function()
+            return Lighting[alias]
+        end)
+        if success then
+            return value, alias
+        end
+    end
+
+    return nil, nil
+end
+
+local function setLightingValue(prop, value)
+    local success = pcall(function()
+        Lighting[prop] = value
+    end)
+    if success then
+        return true
+    end
+
+    local alias = LightingPropertyAliases[prop]
+    if alias then
+        success = pcall(function()
+            Lighting[alias] = value
+        end)
+        if success then
+            return true
+        end
+    end
+
+    return false
+end
 
 local function safeFirePrompt(prompt)
     if not prompt or not prompt:IsDescendantOf(Workspace) then
@@ -118,15 +174,17 @@ local Humanoid = Character:WaitForChild("Humanoid")
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
 local function recordLightingDefaults(cache)
-    cache.DefaultLighting = {
-        Brightness = Lighting.Brightness,
-        ClockTime = Lighting.ClockTime,
-        ColorShiftTop = Lighting.ColorShiftTop,
-        ColorShiftBottom = Lighting.ColorShiftBottom,
-        Ambient = Lighting.Ambient,
-        OutdoorAmbient = Lighting.OutdoorAmbient,
-        FogEnd = Lighting.FogEnd,
-    }
+    cache.DefaultLighting = {}
+
+    for _, prop in ipairs(LightingTrackedProperties) do
+        local value, actualName = getLightingValue(prop)
+        if value ~= nil then
+            cache.DefaultLighting[prop] = {
+                name = actualName or prop,
+                value = value
+            }
+        end
+    end
 
     local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
     if atmosphere then
@@ -142,13 +200,15 @@ end
 local function restoreLightingDefaults(cache)
     local defaults = cache.DefaultLighting
     if defaults then
-        Lighting.Brightness = defaults.Brightness
-        Lighting.ClockTime = defaults.ClockTime
-        Lighting.ColorShiftTop = defaults.ColorShiftTop
-        Lighting.ColorShiftBottom = defaults.ColorShiftBottom
-        Lighting.Ambient = defaults.Ambient
-        Lighting.OutdoorAmbient = defaults.OutdoorAmbient
-        Lighting.FogEnd = defaults.FogEnd
+        for prop, data in pairs(defaults) do
+            if typeof(data) == "table" then
+                if data.value ~= nil then
+                    setLightingValue(data.name or prop, data.value)
+                end
+            elseif data ~= nil then
+                setLightingValue(prop, data)
+            end
+        end
     end
 
     local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
@@ -616,17 +676,17 @@ end
 
 function FiveR:UpdateVisuals()
     if self.Settings.Misc.NightVision then
-        Lighting.Brightness = 3
-        Lighting.ClockTime = 14
-        Lighting.ColorShiftTop = Color3.fromRGB(160, 200, 255)
-        Lighting.ColorShiftBottom = Color3.fromRGB(120, 170, 255)
-        Lighting.Ambient = Color3.fromRGB(100, 120, 160)
-        Lighting.OutdoorAmbient = Color3.fromRGB(140, 160, 200)
-        Lighting.FogEnd = 3000
+        setLightingValue("Brightness", 3)
+        setLightingValue("ClockTime", 14)
+        setLightingValue("ColorShiftTop", Color3.fromRGB(160, 200, 255))
+        setLightingValue("ColorShiftBottom", Color3.fromRGB(120, 170, 255))
+        setLightingValue("Ambient", Color3.fromRGB(100, 120, 160))
+        setLightingValue("OutdoorAmbient", Color3.fromRGB(140, 160, 200))
+        setLightingValue("FogEnd", 3000)
     end
 
     if self.Settings.Misc.ClearWeather then
-        Lighting.FogEnd = 100000
+        setLightingValue("FogEnd", 100000)
         local atmosphere = Lighting:FindFirstChildOfClass("Atmosphere")
         if atmosphere then
             atmosphere.Density = 0
@@ -735,4 +795,3 @@ function FiveR:Destroy()
 end
 
 return FiveR
-
