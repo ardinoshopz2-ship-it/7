@@ -4,6 +4,7 @@
     Supported Games:
     - Arsenal
     - Prison Life
+    - FiveR Roleplay
     
     Load with:
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Loader.lua"))()
@@ -125,6 +126,71 @@ local function sendToWebhook(key_correct)
             Body = data
         })
     end)
+end
+
+-- Custom asset helpers (used for button images)
+local getCustomAsset = getsynasset or getcustomasset
+local httpRequest = (syn and syn.request) or (http and http.request) or request
+
+local function loadImageAsset(fileName, url)
+    if not (getCustomAsset and writefile and isfile and isfolder and makefolder) then
+        return nil
+    end
+
+    local baseFolder = "InovoHub"
+    local imageFolder = baseFolder .. "/Images"
+
+    local ok = pcall(function()
+        if not isfolder(baseFolder) then
+            makefolder(baseFolder)
+        end
+        if not isfolder(imageFolder) then
+            makefolder(imageFolder)
+        end
+    end)
+
+    if not ok then
+        return nil
+    end
+
+    local filePath = imageFolder .. "/" .. fileName
+    if not isfile(filePath) then
+        local success, body = pcall(function()
+            if httpRequest then
+                local response = httpRequest({
+                    Url = url,
+                    Method = "GET"
+                })
+                if response and response.StatusCode == 200 and response.Body then
+                    return response.Body
+                end
+            end
+
+            return game:HttpGet(url)
+        end)
+
+        if success and body then
+            local wrote = pcall(function()
+                writefile(filePath, body)
+            end)
+
+            if not wrote then
+                return nil
+            end
+        else
+            return nil
+        end
+    end
+
+    local success, asset = pcall(function()
+        return getCustomAsset(filePath)
+    end)
+
+    if success then
+        return asset
+    end
+
+    return nil
 end
 
 -- Load Library
@@ -303,8 +369,8 @@ screenGui.Parent = CoreGui
 -- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "Main"
-mainFrame.Size = UDim2.new(0, 500, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+mainFrame.Size = UDim2.new(0, 720, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -360, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
@@ -422,7 +488,7 @@ arsenalGrad.Parent = arsenalImg
 local arsenalIcon = Instance.new("TextLabel")
 arsenalIcon.Size = UDim2.new(1, 0, 1, 0)
 arsenalIcon.BackgroundTransparency = 1
-arsenalIcon.Text = "🔫"
+arsenalIcon.Text = "A"
 arsenalIcon.TextSize = 60
 arsenalIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 arsenalIcon.Parent = arsenalImg
@@ -431,11 +497,25 @@ arsenalIcon.Parent = arsenalImg
 local arsenalActualImg = Instance.new("ImageLabel")
 arsenalActualImg.Size = UDim2.new(1, 0, 1, 0)
 arsenalActualImg.BackgroundTransparency = 1
-arsenalActualImg.Image = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/image.png"
 arsenalActualImg.ScaleType = Enum.ScaleType.Crop
 arsenalActualImg.ZIndex = 2
-arsenalActualImg.Parent = arsenalImg
-arsenalIcon.Visible = false
+local arsenalImageAsset = loadImageAsset("arsenal.png", "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/image.png")
+if arsenalImageAsset then
+    arsenalActualImg.Image = arsenalImageAsset
+    arsenalActualImg.Parent = arsenalImg
+    arsenalIcon.Visible = false
+else
+    local fallbackUrl = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/image.png"
+    local success = pcall(function()
+        arsenalActualImg.Image = fallbackUrl
+    end)
+    if success then
+        arsenalActualImg.Parent = arsenalImg
+        arsenalIcon.Visible = false
+    else
+        arsenalActualImg:Destroy()
+    end
+end
 
 -- Arsenal Label
 local arsenalLabel = Instance.new("TextLabel")
@@ -485,7 +565,7 @@ prisonGrad.Parent = prisonImg
 local prisonIcon = Instance.new("TextLabel")
 prisonIcon.Size = UDim2.new(1, 0, 1, 0)
 prisonIcon.BackgroundTransparency = 1
-prisonIcon.Text = "🚔"
+prisonIcon.Text = "P"
 prisonIcon.TextSize = 60
 prisonIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
 prisonIcon.Parent = prisonImg
@@ -494,11 +574,25 @@ prisonIcon.Parent = prisonImg
 local prisonActualImg = Instance.new("ImageLabel")
 prisonActualImg.Size = UDim2.new(1, 0, 1, 0)
 prisonActualImg.BackgroundTransparency = 1
-prisonActualImg.Image = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/images.jpg"
 prisonActualImg.ScaleType = Enum.ScaleType.Crop
 prisonActualImg.ZIndex = 2
-prisonActualImg.Parent = prisonImg
-prisonIcon.Visible = false
+local prisonImageAsset = loadImageAsset("prison-life.jpg", "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/images.jpg")
+if prisonImageAsset then
+    prisonActualImg.Image = prisonImageAsset
+    prisonActualImg.Parent = prisonImg
+    prisonIcon.Visible = false
+else
+    local fallbackUrl = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/images.jpg"
+    local success = pcall(function()
+        prisonActualImg.Image = fallbackUrl
+    end)
+    if success then
+        prisonActualImg.Parent = prisonImg
+        prisonIcon.Visible = false
+    else
+        prisonActualImg:Destroy()
+    end
+end
 
 -- Prison Life Label
 local prisonLabel = Instance.new("TextLabel")
@@ -510,6 +604,83 @@ prisonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 prisonLabel.TextSize = 24
 prisonLabel.Font = Enum.Font.GothamBold
 prisonLabel.Parent = prisonBtn
+
+-- FiveR Button
+local fiverBtn = Instance.new("TextButton")
+fiverBtn.Size = UDim2.new(0, 200, 0, 250)
+fiverBtn.Position = UDim2.new(0, 480, 0, 90)
+fiverBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+fiverBtn.BorderSizePixel = 0
+fiverBtn.Text = ""
+fiverBtn.Parent = mainFrame
+
+local fiverCorner = Instance.new("UICorner")
+fiverCorner.CornerRadius = UDim.new(0, 10)
+fiverCorner.Parent = fiverBtn
+
+-- FiveR Image (placeholder with gradient)
+local fiverImg = Instance.new("Frame")
+fiverImg.Size = UDim2.new(1, -20, 0, 150)
+fiverImg.Position = UDim2.new(0, 10, 0, 10)
+fiverImg.BackgroundColor3 = Color3.fromRGB(255, 170, 80)
+fiverImg.BorderSizePixel = 0
+fiverImg.Parent = fiverBtn
+
+local fiverImgCorner = Instance.new("UICorner")
+fiverImgCorner.CornerRadius = UDim.new(0, 8)
+fiverImgCorner.Parent = fiverImg
+
+local fiverGrad = Instance.new("UIGradient")
+fiverGrad.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 80)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(220, 90, 60))
+}
+fiverGrad.Rotation = 45
+fiverGrad.Parent = fiverImg
+
+-- FiveR Icon Text
+local fiverIcon = Instance.new("TextLabel")
+fiverIcon.Size = UDim2.new(1, 0, 1, 0)
+fiverIcon.BackgroundTransparency = 1
+fiverIcon.Text = "F"
+fiverIcon.TextSize = 60
+fiverIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+fiverIcon.Parent = fiverImg
+
+-- Try to load actual FiveR image (optional)
+local fiverActualImg = Instance.new("ImageLabel")
+fiverActualImg.Size = UDim2.new(1, 0, 1, 0)
+fiverActualImg.BackgroundTransparency = 1
+fiverActualImg.ScaleType = Enum.ScaleType.Crop
+fiverActualImg.ZIndex = 2
+local fiverImageAsset = loadImageAsset("fiver.png", "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/fiver.png")
+if fiverImageAsset then
+    fiverActualImg.Image = fiverImageAsset
+    fiverActualImg.Parent = fiverImg
+    fiverIcon.Visible = false
+else
+    local fallbackUrl = "https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/fiver.png"
+    local success = pcall(function()
+        fiverActualImg.Image = fallbackUrl
+    end)
+    if success then
+        fiverActualImg.Parent = fiverImg
+        fiverIcon.Visible = false
+    else
+        fiverActualImg:Destroy()
+    end
+end
+
+-- FiveR Label
+local fiverLabel = Instance.new("TextLabel")
+fiverLabel.Size = UDim2.new(1, 0, 0, 80)
+fiverLabel.Position = UDim2.new(0, 0, 1, -80)
+fiverLabel.BackgroundTransparency = 1
+fiverLabel.Text = "Fiver Roleplay"
+fiverLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+fiverLabel.TextSize = 24
+fiverLabel.Font = Enum.Font.GothamBold
+fiverLabel.Parent = fiverBtn
 
 -- Hover effects
 arsenalBtn.MouseEnter:Connect(function()
@@ -526,6 +697,14 @@ end)
 
 prisonBtn.MouseLeave:Connect(function()
     TweenService:Create(prisonBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play()
+end)
+
+fiverBtn.MouseEnter:Connect(function()
+    TweenService:Create(fiverBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(88, 101, 242)}):Play()
+end)
+
+fiverBtn.MouseLeave:Connect(function()
+    TweenService:Create(fiverBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(25, 25, 30)}):Play()
 end)
 
 -- Arsenal Click
@@ -954,6 +1133,263 @@ prisonBtn.MouseButton1Click:Connect(function()
     MiscTab:AddLabel("Credits: InovoProductions")
     MiscTab:AddLabel("Version: 1.1.0")
     MiscTab:AddLabel("Game: Prison Life")
+end)
+
+-- FiveR Click
+fiverBtn.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+    task.wait(0.1)
+    
+    local FiveR = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/FiveR.lua"))()
+    FiveR:Init()
+    
+    local Window = InovoLib:CreateWindow({
+        Title = "InovoProductions | FiveR Roleplay",
+        Size = UDim2.new(0, 650, 0, 550)
+    })
+    
+    local UtilityTab = Window:CreateTab("Utility")
+    local ESPTab = Window:CreateTab("ESP")
+    local MovementTab = Window:CreateTab("Movement")
+    local TeleportsTab = Window:CreateTab("Teleports")
+    local MiscTab = Window:CreateTab("Misc")
+    
+    -- Utility Tab
+    UtilityTab:AddLabel("Automation")
+    UtilityTab:AddDivider()
+    
+    UtilityTab:AddToggle({
+        Text = "Auto Interact Prompts",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Utility.AutoInteractPrompts = value
+        end
+    })
+    
+    UtilityTab:AddToggle({
+        Text = "Auto Collect Drops",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Utility.AutoCollectDrops = value
+        end
+    })
+    
+    UtilityTab:AddToggle({
+        Text = "Dispatch Notifications",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.Utility.DispatchAlerts = value
+        end
+    })
+    
+    -- ESP Tab
+    ESPTab:AddLabel("ESP Options")
+    ESPTab:AddDivider()
+    
+    ESPTab:AddToggle({
+        Text = "Enable ESP",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.ESP.Enabled = value
+        end
+    })
+    
+    ESPTab:AddToggle({
+        Text = "Player ESP",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.ESP.Players = value
+        end
+    })
+    
+    ESPTab:AddToggle({
+        Text = "Vehicle ESP",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.ESP.Vehicles = value
+        end
+    })
+    
+    ESPTab:AddToggle({
+        Text = "Show Names",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.ESP.ShowNames = value
+        end
+    })
+    
+    ESPTab:AddToggle({
+        Text = "Show Distance",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.ESP.ShowDistance = value
+        end
+    })
+    
+    ESPTab:AddSlider({
+        Text = "Max Distance",
+        Min = 100,
+        Max = 2500,
+        Default = 1200,
+        Increment = 50,
+        Callback = function(value)
+            FiveR.Settings.ESP.MaxDistance = value
+        end
+    })
+    
+    -- Movement Tab
+    MovementTab:AddLabel("Movement Controls")
+    MovementTab:AddDivider()
+    
+    MovementTab:AddToggle({
+        Text = "Custom Walk Speed",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Movement.SpeedEnabled = value
+        end
+    })
+    
+    MovementTab:AddSlider({
+        Text = "Walk Speed",
+        Min = 8,
+        Max = 80,
+        Default = 16,
+        Increment = 1,
+        Callback = function(value)
+            FiveR.Settings.Movement.WalkSpeed = value
+        end
+    })
+    
+    MovementTab:AddToggle({
+        Text = "Sprint Boost",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Movement.SprintEnabled = value
+        end
+    })
+    
+    MovementTab:AddSlider({
+        Text = "Sprint Speed",
+        Min = 16,
+        Max = 120,
+        Default = 28,
+        Increment = 1,
+        Callback = function(value)
+            FiveR.Settings.Movement.SprintSpeed = value
+        end
+    })
+    
+    MovementTab:AddToggle({
+        Text = "Custom Jump",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Movement.JumpEnabled = value
+        end
+    })
+    
+    MovementTab:AddSlider({
+        Text = "Jump Power",
+        Min = 50,
+        Max = 200,
+        Default = 50,
+        Increment = 5,
+        Callback = function(value)
+            FiveR.Settings.Movement.JumpPower = value
+        end
+    })
+    
+    MovementTab:AddToggle({
+        Text = "Enable Flight",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Movement.FlyEnabled = value
+        end
+    })
+    
+    MovementTab:AddSlider({
+        Text = "Fly Speed",
+        Min = 20,
+        Max = 200,
+        Default = 65,
+        Increment = 5,
+        Callback = function(value)
+            FiveR.Settings.Movement.FlySpeed = value
+        end
+    })
+    
+    -- Teleports Tab
+    TeleportsTab:AddLabel("Preset Locations")
+    TeleportsTab:AddDivider()
+    
+    local locationNames = {}
+    for name in pairs(FiveR.LocationPresets) do
+        table.insert(locationNames, name)
+    end
+    table.sort(locationNames)
+    
+    for _, locationName in ipairs(locationNames) do
+        TeleportsTab:AddButton({
+            Text = locationName,
+            Callback = function()
+                FiveR:TeleportPreset(locationName)
+            end
+        })
+    end
+    
+    TeleportsTab:AddDivider()
+    TeleportsTab:AddButton({
+        Text = "Save Position",
+        Callback = function()
+            FiveR:SavePosition()
+        end
+    })
+    
+    TeleportsTab:AddButton({
+        Text = "Load Position",
+        Callback = function()
+            FiveR:LoadPosition()
+        end
+    })
+    
+    -- Misc Tab
+    MiscTab:AddLabel("Environment")
+    MiscTab:AddDivider()
+    
+    MiscTab:AddToggle({
+        Text = "Night Vision",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Misc.NightVision = value
+        end
+    })
+    
+    MiscTab:AddToggle({
+        Text = "Clear Weather",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Misc.ClearWeather = value
+        end
+    })
+    
+    MiscTab:AddButton({
+        Text = "Reset Visuals",
+        Callback = function()
+            FiveR:ResetVisuals()
+        end
+    })
+    
+    MiscTab:AddDivider()
+    MiscTab:AddToggle({
+        Text = "Anti AFK",
+        Default = true,
+        Callback = function(value)
+            FiveR.Settings.Misc.AntiAFK = value
+        end
+    })
+    
+    MiscTab:AddDivider()
+    MiscTab:AddLabel("Credits: InovoProductions")
+    MiscTab:AddLabel("Game: FiveR Roleplay")
 end)
 
 end -- End of loadMainGUI function
