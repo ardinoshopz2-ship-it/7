@@ -57,19 +57,6 @@ local function randomId(prefix)
     return (prefix or "Inovo") .. "_" .. suffix
 end
 
-local function safeHttpGet(url)
-    if type(game.HttpGet) ~= "function" then
-        return nil
-    end
-
-    local ok, response = pcall(game.HttpGet, game, url)
-    if ok then
-        return response
-    end
-
-    return nil
-end
-
 local function fetchRemote(url)
     local saltedUrl = url
     local delimiter = url:find("?", 1, true) and "&" or "?"
@@ -86,11 +73,6 @@ local function fetchRemote(url)
         if ok and response and response.StatusCode == 200 and response.Body then
             return response.Body
         end
-    end
-
-    local body = safeHttpGet(saltedUrl)
-    if body and #body > 0 then
-        return body
     end
 
     return nil
@@ -283,6 +265,7 @@ local function loadImageAsset(fileName, url)
     if not isfile(filePath) then
         local remoteBody = fetchRemote(url)
         if not remoteBody then
+            warn("[InovoHub] Failed to download asset: " .. tostring(fileName))
             return nil
         end
 
