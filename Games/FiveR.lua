@@ -21,7 +21,7 @@ local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local Lighting = game:GetService("Lighting")
 local StarterGui = game:GetService("StarterGui")
-local VirtualUser = game:GetService("VirtualUser")
+local HumanoidStateType = Enum.HumanoidStateType
 
 local LocalPlayer = Players.LocalPlayer
 local Camera = Workspace.CurrentCamera
@@ -731,10 +731,18 @@ function FiveR:StartLoops()
 
     if not self.AntiAFKConnection then
         self.AntiAFKConnection = LocalPlayer.Idled:Connect(function()
-            if self.Settings.Misc.AntiAFK then
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
+            if not self.Settings.Misc.AntiAFK then
+                return
             end
+
+            pcall(function()
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid:ChangeState(HumanoidStateType.Jumping)
+                    humanoid:Move(Vector3.new(0, 0, 0), true)
+                end
+            end)
         end)
     end
 end
