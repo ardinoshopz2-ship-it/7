@@ -1119,8 +1119,7 @@ prisonBtn.MouseButton1Click:Connect(function()
     
     local CombatTab = Window:CreateTab("Combat")
     local VisualsTab = Window:CreateTab("Visuals")
-    local TeleportsTab = Window:CreateTab("Teleports")
-    local MovementTab = Window:CreateTab("Movement")
+local MovementTab = Window:CreateTab("Movement")
     local MiscTab = Window:CreateTab("Misc")
     
     -- Combat Tab
@@ -1373,13 +1372,12 @@ fiverBtn.MouseButton1Click:Connect(function()
     local UtilityTab = Window:CreateTab("Utility")
     local ESPTab = Window:CreateTab("ESP")
     local MovementTab = Window:CreateTab("Movement")
-    local TeleportsTab = Window:CreateTab("Teleports")
     local MiscTab = Window:CreateTab("Misc")
     
     -- Utility Tab
     UtilityTab:AddLabel("Automation")
     UtilityTab:AddDivider()
-    
+
     UtilityTab:AddToggle({
         Text = "Auto Interact Prompts",
         Default = false,
@@ -1387,7 +1385,7 @@ fiverBtn.MouseButton1Click:Connect(function()
             FiveR.Settings.Utility.AutoInteractPrompts = value
         end
     })
-    
+
     UtilityTab:AddToggle({
         Text = "Auto Collect Drops",
         Default = false,
@@ -1395,7 +1393,7 @@ fiverBtn.MouseButton1Click:Connect(function()
             FiveR.Settings.Utility.AutoCollectDrops = value
         end
     })
-    
+
     UtilityTab:AddToggle({
         Text = "Dispatch Notifications",
         Default = true,
@@ -1403,7 +1401,28 @@ fiverBtn.MouseButton1Click:Connect(function()
             FiveR.Settings.Utility.DispatchAlerts = value
         end
     })
-    
+
+    UtilityTab:AddToggle({
+        Text = "Politie waarschuwing",
+        Default = false,
+        Callback = function(value)
+            FiveR.Settings.Utility.AlertPolice = value
+        end
+    })
+
+    UtilityTab:AddSlider({
+        Text = "Alert Range",
+        Min = 50,
+        Max = 400,
+        Default = FiveR.Settings.Utility.AlertRange,
+        Increment = 10,
+        Callback = function(value)
+            FiveR.Settings.Utility.AlertRange = value
+        end
+    })
+
+    UtilityTab:AddDivider()
+
     -- ESP Tab
     ESPTab:AddLabel("ESP Options")
     ESPTab:AddDivider()
@@ -1530,51 +1549,12 @@ fiverBtn.MouseButton1Click:Connect(function()
     
     MovementTab:AddSlider({
         Text = "Fly Speed",
-        Min = 20,
-        Max = 200,
-        Default = 65,
+        Min = 10,
+        Max = 120,
+        Default = FiveR.Settings.Movement.FlySpeed,
         Increment = 5,
         Callback = function(value)
             FiveR.Settings.Movement.FlySpeed = value
-        end
-    })
-    
-    -- Teleports Tab
-    TeleportsTab:AddLabel("Preset Locations")
-    TeleportsTab:AddDivider()
-    TeleportsTab:AddLabel("Tip: Houd Shift vast + klik om locatie op te slaan.")
-    
-    local locationNames = {}
-    for name in pairs(FiveR.LocationPresets) do
-        table.insert(locationNames, name)
-    end
-    table.sort(locationNames)
-    
-    for _, locationName in ipairs(locationNames) do
-        TeleportsTab:AddButton({
-            Text = locationName,
-            Callback = function()
-                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
-                    FiveR:CaptureLocation(locationName)
-                else
-                    FiveR:TeleportPreset(locationName)
-                end
-            end
-        })
-    end
-    
-    TeleportsTab:AddDivider()
-    TeleportsTab:AddButton({
-        Text = "Save Position",
-        Callback = function()
-            FiveR:SavePosition()
-        end
-    })
-    
-    TeleportsTab:AddButton({
-        Text = "Load Position",
-        Callback = function()
-            FiveR:LoadPosition()
         end
     })
     
@@ -1622,6 +1602,15 @@ end)
 end -- End of loadMainGUI function
 
 print("[InovoHub] Key system loaded!")
+
+
+
+
+
+
+
+
+
 
 
 

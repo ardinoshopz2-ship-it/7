@@ -7,7 +7,7 @@
     - Player and vehicle ESP
     - Movement utilities (speed, sprint, flight)
     - Visual helpers (night vision, clear weather)
-    - Teleport helpers with preset search + custom save slot
+    - Proximity alerts (police detection)
     - Anti-AFK protection
 ]]
 
@@ -116,11 +116,31 @@ local function safeTouch(partA, partB)
     end)
 end
 
+local function isPoliceTeam(player)
+    local team = player and player.Team
+    if team and team.Name then
+        local name = string.lower(team.Name)
+        if name:find("police") or name:find("agent") or name:find("cop") or name:find("kmar") then
+            return true
+        end
+    end
+
+    local descriptor = string.lower(player and (player.DisplayName or player.Name) or "")
+    if descriptor:find("politie") or descriptor:find("agent") then
+        return true
+    end
+
+    return false
+end
+
+
 FiveR.Settings = {
     Utility = {
         AutoInteractPrompts = false,
         AutoCollectDrops = false,
         DispatchAlerts = true,
+        AlertPolice = false,
+        AlertRange = 150,
     },
     ESP = {
         Enabled = false,
@@ -147,19 +167,6 @@ FiveR.Settings = {
     }
 }
 
-FiveR.LocationPresets = {
-    ["Central Spawn"] = {"spawn"},
-    ["Police HQ"] = {"police", "hq"},
-    ["Hospital"] = {"hospital"},
-    ["Fire Department"] = {"fire", "station"},
-    ["Dealership"] = {"dealer"},
-    ["City Hall"] = {"city", "hall"},
-    ["Bank"] = {"bank"},
-    ["Harbor"] = {"harbor"},
-}
-FiveR.LocationOverrides = _G.InovoFiveRLocations or {}
-_G.InovoFiveRLocations = FiveR.LocationOverrides
-
 FiveR.__cache = {
     ESPPlayers = {},
     ESPVehicles = {},
@@ -171,9 +178,11 @@ FiveR.__cache = {
     FlyAltitude = nil,
     LastFlightTick = nil,
     OriginalHipHeight = nil,
-    ResolvedLocations = {},
     DefaultLighting = {},
     AtmosphereDefaults = nil,
+    LastPoliceScan = 0,
+    LastAlertTick = 0,
+    LastAlertId = nil,
 }
 
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
@@ -227,66 +236,9 @@ local function restoreLightingDefaults(cache)
     end
 end
 
-local function getCFrameFromInstance(inst)
-    if not inst then
-        return nil
-    end
-
-    if inst:IsA("BasePart") then
+if inst:IsA("BasePart") then
         return inst.CFrame
-    end
-
-    if inst:IsA("Model") then
-        local primary = inst.PrimaryPart
-        if primary then
-            return primary.CFrame
-        end
-
-        local part = inst:FindFirstChildWhichIsA("BasePart", true)
-        if part then
-            return part.CFrame
-        end
-    end
-
-    return nil
-end
-
-local function findMatchingLocation(tokens)
-    local tokensLower = {}
-    for _, token in ipairs(tokens) do
-        table.insert(tokensLower, string.lower(token))
-    end
-
-    local bestCFrame
-    local bestScore
-    for _, inst in ipairs(Workspace:GetDescendants()) do
-        if inst:IsA("BasePart") or inst:IsA("Model") then
-            local lowerName = string.lower(inst.Name)
-            local matches = true
-            for _, token in ipairs(tokensLower) do
-                if not string.find(lowerName, token, 1, true) then
-                    matches = false
-                    break
-                end
-            end
-
-            if matches then
-                local cframe = getCFrameFromInstance(inst)
-                if cframe then
-                    local score = #lowerName
-                    if not bestScore or score < bestScore then
-                        bestScore = score
-                        bestCFrame = cframe
-                    end
-                end
-            end
-        end
-    end
-
-    return bestCFrame
-end
-
-function FiveR:Notify(text, color)
+    endfunction FiveR:Notify(text, color)
     if not self.Settings.Utility.DispatchAlerts then
         return
     end
@@ -300,6 +252,48 @@ function FiveR:Notify(text, color)
             Icon = "rbxassetid://7734057667",
         })
     end)
+end
+
+function FiveR:CheckPoliceProximity()
+    if not (self.Settings.Utility.AlertPolice and HumanoidRootPart) then
+        return
+    end
+
+    local now = tick()
+    if now - (self.__cache.LastPoliceScan or 0) < 2 then
+        return
+    end
+    self.__cache.LastPoliceScan = now
+
+    local range = self.Settings.Utility.AlertRange or 150
+    local closestPlayer
+    local closestDistance = range
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and isPoliceTeam(player) then
+            local character = player.Character
+            local root = character and character:FindFirstChild("HumanoidRootPart")
+            if root then
+                local distance = (HumanoidRootPart.Position - root.Position).Magnitude
+                if distance <= closestDistance then
+                    closestDistance = distance
+                    closestPlayer = player
+                end
+            end
+        end
+    end
+
+    if closestPlayer then
+        local identifier = closestPlayer.UserId
+        local lastId = self.__cache.LastAlertId
+        local lastTick = self.__cache.LastAlertTick or 0
+
+        if identifier ~= lastId or now - lastTick > 10 then
+            self.__cache.LastAlertId = identifier
+            self.__cache.LastAlertTick = now
+            self:Notify(string.format("Politie dicht in de buurt: %s [%dm]", closestPlayer.DisplayName or closestPlayer.Name, math.floor(closestDistance)))
+        end
+    end
 end
 
 function FiveR:UpdateCharacter(char)
@@ -332,65 +326,6 @@ function FiveR:SafeTeleport(targetCFrame)
     end)
 
     return success
-end
-
-function FiveR:TeleportPreset(name)
-    local tokens = self.LocationPresets[name]
-    if not tokens then
-        self:Notify("Preset not found: " .. tostring(name))
-        return
-    end
-
-    local cached = self.LocationOverrides[name] or self.__cache.ResolvedLocations[name]
-    if not cached then
-        cached = findMatchingLocation(tokens)
-        if cached then
-            self.__cache.ResolvedLocations[name] = cached
-        end
-    end
-
-    if cached then
-        self:SafeTeleport(cached + Vector3.new(0, 3, 0))
-        self:Notify("Teleported to " .. name)
-    else
-        self:Notify("Kon locatie niet vinden: " .. name)
-    end
-end
-
-function FiveR:SavePosition()
-    if HumanoidRootPart then
-        self.__cache.SavedPosition = HumanoidRootPart.CFrame
-        self:Notify("Positie opgeslagen")
-    end
-end
-
-function FiveR:LoadPosition()
-    if self.__cache.SavedPosition then
-        self:SafeTeleport(self.__cache.SavedPosition)
-        self:Notify("Positie geladen")
-    else
-        self:Notify("Geen positie opgeslagen")
-    end
-end
-
-function FiveR:SetPresetLocation(name, cframe)
-    if not name or not cframe then
-        return
-    end
-
-    self.LocationOverrides[name] = cframe
-    self.__cache.ResolvedLocations[name] = cframe
-    _G.InovoFiveRLocations = self.LocationOverrides
-    self:Notify("Locatie bijgewerkt: " .. tostring(name))
-end
-
-function FiveR:CaptureLocation(name)
-    if not HumanoidRootPart then
-        self:Notify("Kon huidige positie niet bepalen.")
-        return
-    end
-
-    self:SetPresetLocation(name, HumanoidRootPart.CFrame)
 end
 
 function FiveR:ClearESP()
@@ -660,7 +595,8 @@ function FiveR:UpdateFlight()
     Humanoid.PlatformStand = false
     Humanoid:ChangeState(HumanoidStateType.Freefall)
 
-    local verticalSpeed = math.clamp(self.Settings.Movement.FlySpeed / 4, 3, 18)
+    local flySpeed = math.clamp(self.Settings.Movement.FlySpeed, 6, 120)
+    local verticalSpeed = math.clamp(flySpeed / 6, 2, flySpeed / 1.8)
     if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
         cache.FlyAltitude += verticalSpeed * dt
     elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
@@ -689,21 +625,20 @@ function FiveR:UpdateFlight()
         horizontal = horizontal.Unit
     end
 
-    local speed = math.clamp(self.Settings.Movement.FlySpeed, 10, 40)
-    local moveDelta = horizontal * speed * dt
+    local moveDelta = horizontal * flySpeed * dt
     local targetPos = HumanoidRootPart.Position + moveDelta
     targetPos = Vector3.new(targetPos.X, cache.FlyAltitude, targetPos.Z)
 
-    HumanoidRootPart.AssemblyLinearVelocity = HumanoidRootPart.AssemblyLinearVelocity:Lerp(Vector3.zero, 0.45)
+    HumanoidRootPart.AssemblyLinearVelocity = HumanoidRootPart.AssemblyLinearVelocity:Lerp(Vector3.zero, 0.3)
 
     local lookDirection = horizontal.Magnitude > 0 and horizontal.Unit or Camera.CFrame.LookVector
     local targetCFrame = CFrame.new(targetPos, targetPos + lookDirection)
-    HumanoidRootPart.CFrame = HumanoidRootPart.CFrame:Lerp(targetCFrame, 0.6)
+    local blend = math.clamp(dt * 3, 0.35, 0.65)
+    HumanoidRootPart.CFrame = HumanoidRootPart.CFrame:Lerp(targetCFrame, blend)
 
     if Humanoid and cache.OriginalHipHeight then
         Humanoid.HipHeight = math.clamp(cache.FlyAltitude - HumanoidRootPart.Position.Y, 0, cache.OriginalHipHeight + 2)
     end
-end
 
 function FiveR:HandlePrompts()
     if not self.Settings.Utility.AutoInteractPrompts or not HumanoidRootPart then
@@ -818,6 +753,7 @@ function FiveR:StartLoops()
             self:UpdateFlight()
             self:HandlePrompts()
             self:CollectDrops()
+            self:CheckPoliceProximity()
             self:UpdateVisuals()
         end)
     end)
@@ -902,3 +838,16 @@ function FiveR:Destroy()
 end
 
 return FiveR
+
+
+
+
+
+
+
+
+
+
+
+
+
