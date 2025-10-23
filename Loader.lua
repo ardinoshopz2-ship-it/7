@@ -1542,6 +1542,7 @@ fiverBtn.MouseButton1Click:Connect(function()
     -- Teleports Tab
     TeleportsTab:AddLabel("Preset Locations")
     TeleportsTab:AddDivider()
+    TeleportsTab:AddLabel("Tip: Houd Shift vast + klik om locatie op te slaan.")
     
     local locationNames = {}
     for name in pairs(FiveR.LocationPresets) do
@@ -1553,7 +1554,11 @@ fiverBtn.MouseButton1Click:Connect(function()
         TeleportsTab:AddButton({
             Text = locationName,
             Callback = function()
-                FiveR:TeleportPreset(locationName)
+                if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then
+                    FiveR:CaptureLocation(locationName)
+                else
+                    FiveR:TeleportPreset(locationName)
+                end
             end
         })
     end

@@ -28,6 +28,9 @@ local Camera = Workspace.CurrentCamera
 
 local firePrompt = fireproximityprompt
 local fireTouch = firetouchinterest
+local raycastParams = RaycastParams.new()
+raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+raycastParams.FilterDescendantsInstances = {LocalPlayer.Character}
 
 local LightingPropertyAliases = {
     ColorShiftTop = "ColorShift_Top",
@@ -154,6 +157,8 @@ FiveR.LocationPresets = {
     ["Bank"] = {"bank"},
     ["Harbor"] = {"harbor"},
 }
+FiveR.LocationOverrides = _G.InovoFiveRLocations or {}
+_G.InovoFiveRLocations = FiveR.LocationOverrides
 
 FiveR.__cache = {
     ESPPlayers = {},
@@ -163,8 +168,10 @@ FiveR.__cache = {
     LastDropScan = 0,
     SavedPosition = nil,
     Running = false,
-    FlyVelocity = nil,
-    FlyGyro = nil,
+    FlyAltitude = nil,
+    LastFlightTick = nil,
+    OriginalHipHeight = nil,
+    ResolvedLocations = {},
     DefaultLighting = {},
     AtmosphereDefaults = nil,
 }
@@ -220,33 +227,63 @@ local function restoreLightingDefaults(cache)
     end
 end
 
-local function findMatchingPart(tokens)
+local function getCFrameFromInstance(inst)
+    if not inst then
+        return nil
+    end
+
+    if inst:IsA("BasePart") then
+        return inst.CFrame
+    end
+
+    if inst:IsA("Model") then
+        local primary = inst.PrimaryPart
+        if primary then
+            return primary.CFrame
+        end
+
+        local part = inst:FindFirstChildWhichIsA("BasePart", true)
+        if part then
+            return part.CFrame
+        end
+    end
+
+    return nil
+end
+
+local function findMatchingLocation(tokens)
     local tokensLower = {}
     for _, token in ipairs(tokens) do
         table.insert(tokensLower, string.lower(token))
     end
 
-    local bestCandidate
+    local bestCFrame
+    local bestScore
     for _, inst in ipairs(Workspace:GetDescendants()) do
-        if inst:IsA("BasePart") and inst.Parent and inst.CanCollide then
+        if inst:IsA("BasePart") or inst:IsA("Model") then
             local lowerName = string.lower(inst.Name)
-            local allMatch = true
-
+            local matches = true
             for _, token in ipairs(tokensLower) do
                 if not string.find(lowerName, token, 1, true) then
-                    allMatch = false
+                    matches = false
                     break
                 end
             end
 
-            if allMatch then
-                bestCandidate = inst
-                break
+            if matches then
+                local cframe = getCFrameFromInstance(inst)
+                if cframe then
+                    local score = #lowerName
+                    if not bestScore or score < bestScore then
+                        bestScore = score
+                        bestCFrame = cframe
+                    end
+                end
             end
         end
     end
 
-    return bestCandidate
+    return bestCFrame
 end
 
 function FiveR:Notify(text, color)
@@ -269,6 +306,10 @@ function FiveR:UpdateCharacter(char)
     Character = char
     Humanoid = char:WaitForChild("Humanoid")
     HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
+
+    if raycastParams then
+        raycastParams.FilterDescendantsInstances = {char}
+    end
 end
 
 function FiveR:SafeTeleport(targetCFrame)
@@ -300,9 +341,16 @@ function FiveR:TeleportPreset(name)
         return
     end
 
-    local part = findMatchingPart(tokens)
-    if part and part:IsA("BasePart") then
-        self:SafeTeleport(part.CFrame + Vector3.new(0, 3, 0))
+    local cached = self.LocationOverrides[name] or self.__cache.ResolvedLocations[name]
+    if not cached then
+        cached = findMatchingLocation(tokens)
+        if cached then
+            self.__cache.ResolvedLocations[name] = cached
+        end
+    end
+
+    if cached then
+        self:SafeTeleport(cached + Vector3.new(0, 3, 0))
         self:Notify("Teleported to " .. name)
     else
         self:Notify("Kon locatie niet vinden: " .. name)
@@ -323,6 +371,26 @@ function FiveR:LoadPosition()
     else
         self:Notify("Geen positie opgeslagen")
     end
+end
+
+function FiveR:SetPresetLocation(name, cframe)
+    if not name or not cframe then
+        return
+    end
+
+    self.LocationOverrides[name] = cframe
+    self.__cache.ResolvedLocations[name] = cframe
+    _G.InovoFiveRLocations = self.LocationOverrides
+    self:Notify("Locatie bijgewerkt: " .. tostring(name))
+end
+
+function FiveR:CaptureLocation(name)
+    if not HumanoidRootPart then
+        self:Notify("Kon huidige positie niet bepalen.")
+        return
+    end
+
+    self:SetPresetLocation(name, HumanoidRootPart.CFrame)
 end
 
 function FiveR:ClearESP()
@@ -349,6 +417,10 @@ function FiveR:ClearESP()
 end
 
 function FiveR:EnsurePlayerESP(player)
+    if player == LocalPlayer then
+        return
+    end
+
     local character = player.Character
     if not character or not HumanoidRootPart then
         return
@@ -360,7 +432,7 @@ function FiveR:EnsurePlayerESP(player)
         self.__cache.ESPPlayers[player] = cache
     end
 
-    if not cache.Highlight or not cache.Highlight.Parent then
+    if (not cache.Highlight or not cache.Highlight.Parent) and self.Settings.ESP.Players and self.Settings.ESP.Enabled then
         local highlight = Instance.new("Highlight")
         highlight.Name = "InovoFiveRESP"
         highlight.Adornee = character
@@ -371,59 +443,57 @@ function FiveR:EnsurePlayerESP(player)
         cache.Highlight = highlight
     end
 
-    if self.Settings.ESP.ShowNames or self.Settings.ESP.ShowDistance then
-        local billboard = cache.Billboard
-        if not billboard or not billboard.Parent then
-            billboard = Instance.new("BillboardGui")
-            billboard.Name = "InovoFiveRESPBillboard"
-            billboard.Size = UDim2.new(0, 150, 0, 40)
-            billboard.StudsOffset = Vector3.new(0, 3, 0)
-            billboard.AlwaysOnTop = true
-            billboard.Parent = character
+    local billboard = cache.Billboard
+    if (not billboard or not billboard.Parent) and (self.Settings.ESP.ShowNames or self.Settings.ESP.ShowDistance) then
+        billboard = Instance.new("BillboardGui")
+        billboard.Name = "InovoFiveRESPBillboard"
+        billboard.Size = UDim2.new(0, 150, 0, 40)
+        billboard.StudsOffset = Vector3.new(0, 3, 0)
+        billboard.AlwaysOnTop = true
+        billboard.Parent = character
 
-            local label = Instance.new("TextLabel")
-            label.Name = "Text"
-            label.Size = UDim2.new(1, 0, 1, 0)
-            label.BackgroundTransparency = 1
-            label.Font = Enum.Font.GothamBold
-            label.TextColor3 = Color3.fromRGB(255, 255, 255)
-            label.TextStrokeTransparency = 0
-            label.TextScaled = true
-            label.Parent = billboard
+        local label = Instance.new("TextLabel")
+        label.Name = "Text"
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.BackgroundTransparency = 1
+        label.Font = Enum.Font.GothamBold
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextStrokeTransparency = 0
+        label.TextScaled = true
+        label.Parent = billboard
 
-            cache.Billboard = billboard
-        end
-
-        local label = cache.Billboard:FindFirstChild("Text")
-        if label then
-            local fragments = {}
-            if self.Settings.ESP.ShowNames then
-                table.insert(fragments, player.DisplayName or player.Name)
-            end
-            if self.Settings.ESP.ShowDistance and character:FindFirstChild("HumanoidRootPart") and HumanoidRootPart then
-                local distance = math.floor((HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude)
-                table.insert(fragments, "[" .. distance .. "m]")
-            end
-            label.Text = table.concat(fragments, " ")
-        end
-    elseif cache.Billboard then
-        cache.Billboard:Destroy()
-        cache.Billboard = nil
+        cache.Billboard = billboard
     end
 
-    if not self.Settings.ESP.Players then
-        if cache.Highlight then
-            cache.Highlight.OutlineTransparency = 1
-        end
-        if cache.Billboard then
-            cache.Billboard.Enabled = false
-        end
-    else
-        if cache.Highlight then
-            cache.Highlight.OutlineTransparency = 0
-        end
-        if cache.Billboard then
-            cache.Billboard.Enabled = true
+    local humanoidRoot = character:FindFirstChild("HumanoidRootPart")
+    local distance = humanoidRoot and (HumanoidRootPart.Position - humanoidRoot.Position).Magnitude or math.huge
+    cache.Distance = distance
+
+    local withinRange = distance <= (self.Settings.ESP.MaxDistance or 1200)
+    local showHighlight = self.Settings.ESP.Enabled and self.Settings.ESP.Players and withinRange
+
+    if cache.Highlight then
+        cache.Highlight.Enabled = showHighlight
+        cache.Highlight.FillTransparency = 1
+        cache.Highlight.OutlineTransparency = showHighlight and 0 or 1
+    end
+
+    if billboard then
+        local showBillboard = showHighlight and (self.Settings.ESP.ShowNames or self.Settings.ESP.ShowDistance)
+        billboard.Enabled = showBillboard
+
+        if showBillboard then
+            local label = billboard:FindFirstChild("Text")
+            if label then
+                local fragments = {}
+                if self.Settings.ESP.ShowNames then
+                    table.insert(fragments, player.DisplayName or player.Name)
+                end
+                if self.Settings.ESP.ShowDistance then
+                    table.insert(fragments, "[" .. math.floor(distance) .. "m]")
+                end
+                label.Text = table.concat(fragments, " ")
+            end
         end
     end
 end
@@ -439,7 +509,7 @@ function FiveR:EnsureVehicleESP(model)
         self.__cache.ESPVehicles[model] = cache
     end
 
-    if not cache.Highlight or not cache.Highlight.Parent then
+    if (not cache.Highlight or not cache.Highlight.Parent) and self.Settings.ESP.Vehicles then
         local highlight = Instance.new("Highlight")
         highlight.Name = "InovoFiveRVESP"
         highlight.Adornee = model
@@ -451,10 +521,23 @@ function FiveR:EnsureVehicleESP(model)
         cache.Highlight = highlight
     end
 
-    if not self.Settings.ESP.Vehicles and cache.Highlight then
-        cache.Highlight.Enabled = false
-    elseif cache.Highlight then
-        cache.Highlight.Enabled = true
+    if not cache.PrimaryPart or not cache.PrimaryPart.Parent then
+        if model:IsA("Model") then
+            cache.PrimaryPart = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart", true)
+        elseif model:IsA("BasePart") then
+            cache.PrimaryPart = model
+        end
+    end
+
+    local distance = math.huge
+    if cache.PrimaryPart then
+        distance = (HumanoidRootPart.Position - cache.PrimaryPart.Position).Magnitude
+    end
+    cache.Distance = distance
+
+    if cache.Highlight then
+        local withinRange = self.Settings.ESP.Enabled and self.Settings.ESP.Vehicles and distance <= (self.Settings.ESP.MaxDistance or 1200)
+        cache.Highlight.Enabled = withinRange
     end
 end
 
@@ -492,18 +575,18 @@ function FiveR:UpdateESP()
             if esp.Highlight then
                 esp.Highlight:Destroy()
             end
-            if esp.Billboard then
-                esp.Billboard:Destroy()
-            end
             self.__cache.ESPVehicles[model] = nil
+        else
+            self:EnsureVehicleESP(model)
         end
     end
 
+    local maxDistance = self.Settings.ESP.MaxDistance or 1200
     if self.Settings.ESP.Vehicles then
         for _, seat in ipairs(Workspace:GetDescendants()) do
             if seat:IsA("VehicleSeat") or seat:IsA("Seat") then
                 local model = seat:FindFirstAncestorOfClass("Model")
-                if model and model ~= Character and (HumanoidRootPart.Position - seat.Position).Magnitude <= self.Settings.ESP.MaxDistance then
+                if model and model ~= Character and (HumanoidRootPart.Position - seat.Position).Magnitude <= maxDistance then
                     self:EnsureVehicleESP(model)
                 end
             end
@@ -535,17 +618,20 @@ end
 
 function FiveR:DisableFlight()
     local cache = self.__cache
-    if cache.FlyVelocity then
-        cache.FlyVelocity:Destroy()
-        cache.FlyVelocity = nil
-    end
-    if cache.FlyGyro then
-        cache.FlyGyro:Destroy()
-        cache.FlyGyro = nil
-    end
+    cache.FlyAltitude = nil
+    cache.LastFlightTick = nil
+
     if Humanoid then
         Humanoid.PlatformStand = false
+        Humanoid.AutoRotate = true
+        if cache.OriginalHipHeight then
+            pcall(function()
+                Humanoid.HipHeight = cache.OriginalHipHeight
+            end)
+        end
     end
+
+    cache.OriginalHipHeight = nil
 end
 
 function FiveR:UpdateFlight()
@@ -559,51 +645,64 @@ function FiveR:UpdateFlight()
     end
 
     local cache = self.__cache
-    if not cache.FlyVelocity then
-        cache.FlyVelocity = Instance.new("BodyVelocity")
-        cache.FlyVelocity.Name = "InovoFiveRFlyVelocity"
-        cache.FlyVelocity.MaxForce = Vector3.new(1e5, 1e5, 1e5)
-        cache.FlyVelocity.Parent = HumanoidRootPart
+    if not cache.FlyAltitude then
+        cache.FlyAltitude = HumanoidRootPart.Position.Y
+        if Humanoid then
+            cache.OriginalHipHeight = Humanoid.HipHeight
+            Humanoid.AutoRotate = false
+        end
     end
 
-    if not cache.FlyGyro then
-        cache.FlyGyro = Instance.new("BodyGyro")
-        cache.FlyGyro.Name = "InovoFiveRFlyGyro"
-        cache.FlyGyro.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
-        cache.FlyGyro.Parent = HumanoidRootPart
+    local now = tick()
+    local dt = math.clamp(now - (cache.LastFlightTick or now), 0, 0.2)
+    cache.LastFlightTick = now
+
+    Humanoid.PlatformStand = false
+    Humanoid:ChangeState(HumanoidStateType.Freefall)
+
+    local verticalSpeed = math.clamp(self.Settings.Movement.FlySpeed / 4, 3, 18)
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+        cache.FlyAltitude += verticalSpeed * dt
+    elseif UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) or UserInputService:IsKeyDown(Enum.KeyCode.C) then
+        cache.FlyAltitude -= verticalSpeed * dt
     end
 
-    Humanoid.PlatformStand = true
+    local rayResult = Workspace:Raycast(HumanoidRootPart.Position, Vector3.new(0, -200, 0), raycastParams)
+    local groundY = rayResult and rayResult.Position.Y or (HumanoidRootPart.Position.Y - 200)
+    cache.FlyAltitude = math.clamp(cache.FlyAltitude, groundY + 2, groundY + 120)
 
-    local direction = Vector3.new()
-    local lookVector = Camera.CFrame.LookVector
-    local rightVector = Camera.CFrame.RightVector
-
+    local horizontal = Vector3.new()
     if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-        direction += lookVector
+        horizontal += Camera.CFrame.LookVector
     end
     if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-        direction -= lookVector
+        horizontal -= Camera.CFrame.LookVector
     end
     if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-        direction += rightVector
+        horizontal += Camera.CFrame.RightVector
     end
     if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-        direction -= rightVector
+        horizontal -= Camera.CFrame.RightVector
     end
-    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-        direction += Vector3.new(0, 1, 0)
-    end
-    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
-        direction -= Vector3.new(0, 1, 0)
+    horizontal = Vector3.new(horizontal.X, 0, horizontal.Z)
+    if horizontal.Magnitude > 1 then
+        horizontal = horizontal.Unit
     end
 
-    if direction.Magnitude > 0 then
-        direction = direction.Unit
-    end
+    local speed = math.clamp(self.Settings.Movement.FlySpeed, 10, 40)
+    local moveDelta = horizontal * speed * dt
+    local targetPos = HumanoidRootPart.Position + moveDelta
+    targetPos = Vector3.new(targetPos.X, cache.FlyAltitude, targetPos.Z)
 
-    cache.FlyVelocity.Velocity = direction * self.Settings.Movement.FlySpeed
-    cache.FlyGyro.CFrame = Camera.CFrame
+    HumanoidRootPart.AssemblyLinearVelocity = HumanoidRootPart.AssemblyLinearVelocity:Lerp(Vector3.zero, 0.45)
+
+    local lookDirection = horizontal.Magnitude > 0 and horizontal.Unit or Camera.CFrame.LookVector
+    local targetCFrame = CFrame.new(targetPos, targetPos + lookDirection)
+    HumanoidRootPart.CFrame = HumanoidRootPart.CFrame:Lerp(targetCFrame, 0.6)
+
+    if Humanoid and cache.OriginalHipHeight then
+        Humanoid.HipHeight = math.clamp(cache.FlyAltitude - HumanoidRootPart.Position.Y, 0, cache.OriginalHipHeight + 2)
+    end
 end
 
 function FiveR:HandlePrompts()
