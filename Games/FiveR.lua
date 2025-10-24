@@ -239,9 +239,7 @@ local function restoreLightingDefaults(cache)
     end
 end
 
-if inst:IsA("BasePart") then
-        return inst.CFrame
-    endfunction FiveR:Notify(text, color)
+function FiveR:Notify(text, color)
     if not self.Settings.Utility.DispatchAlerts then
         return
     end
@@ -642,6 +640,7 @@ function FiveR:UpdateFlight()
     if Humanoid and cache.OriginalHipHeight then
         Humanoid.HipHeight = math.clamp(cache.FlyAltitude - HumanoidRootPart.Position.Y, 0, cache.OriginalHipHeight + 2)
     end
+end
 
 function FiveR:HandlePrompts()
     if not self.Settings.Utility.AutoInteractPrompts or not HumanoidRootPart then
@@ -841,6 +840,7 @@ function FiveR:Destroy()
 end
 
 return FiveR
+
 
 
 
