@@ -1,0 +1,75 @@
+FiveR/Loader Project Summary
+===========================
+
+Timeline & Context
+------------------
+* Project: Roblox hub with Loader.lua + game modules (Arsenal, PrisonLife, FiveR).
+* Focus (23–24 Oct): integrate FiveR, match UI, stay stealthy vs Adonis/Alpine anticheat.
+* Recurrent warning: 'Could not compile FiveR script' when loader receives malformed or empty FiveR.lua.
+
+Current Status
+--------------
+* Working files: Loader.lua, Games/FiveR.lua, Games/PrisonLife.lua, Games/Arsenal.lua, Games/BloxFruits.lua, uitleg.txt.
+* Working dir: c:\\Users\\Arda\\Desktop\\data
+* Editor tabs usually open: Loader.lua, Games/FiveR.lua, Games/PrisonLife.lua, Games/Arsenal.lua, Games/BloxFruits.lua, uitleg.txt.
+
+Loader.lua Highlights
+---------------------
+* Uses fetchService helper; fetchRemote first tries syn/http/request with salted URL + slight delay, then falls back to game:HttpGet on failure.
+* Key system + selector UI (Arsenal, Prison Life, FiveR).
+* FiveR window contains Utility, ESP, Movement, Misc tabs (Teleports removed).
+* Utility tab toggles: Auto Interact, Auto Collect, Dispatch Notifications, 'Politie waarschuwing', Alert Range slider.
+* Movement tab: Walk Speed, Sprint, Jump toggles + stealth flight speed (10–120).
+* Misc tab: Night Vision, Clear Weather, Reset Visuals.
+* Loader logs warning if FiveR fails to compile and avoids VirtualUser or disallowed services.
+
+Games/FiveR.lua Highlights
+---------------------------
+* Services: Players, RunService, UserInputService, TweenService, Lighting, StarterGui, etc.
+* Utility features: auto prompts, auto drop collection, dispatch alerts, optional police proximity alerts (CheckPoliceProximity uses isPoliceTeam).
+* ESP: player/vehicle highlights respect MaxDistance slider and toggle states, disabling instantly when off.
+* Movement: walk/sprint/jump modifiers plus lerp-based stealth flight that honors slider speed and clamps altitude without BodyVelocity.
+* Anti-AFK: jump nudge instead of VirtualUser.
+* Misc: night vision, clear weather, reset visuals; teleports fully removed (no CaptureLocation/SetPreset).
+
+Fixes & Lessons
+----------------
+1. Script corruption (e.g., stray 'endfunction', 'function Fix') broke compilation. Always revert to clean remote copy before tweaks.
+2. Missing HTTP fallback caused fetchRemote to return nil. Added safeHttpGet fallback with salted query.
+3. Loader Teleports tab removed for FiveR to prevent references to deleted functions.
+4. Stealth tweaks kept: lerp flight, police alerts optional, no BodyVelocity/VirtualUser usage.
+
+Testing Checklist
+-----------------
+1. Execute loadstring: loadstring(game:HttpGet('https://raw.githubusercontent.com/ardinoshopz2-ship-it/7/main/Loader.lua'))().
+2. Pass key system, select FiveR card; no console warning should appear.
+3. Verify Utility defaults (AlertPolice=false, AlertRange=150).
+4. Toggle ESP/vehicles and adjust MaxDistance to confirm live updates.
+5. Test movement toggles and flight speed (ensure no anticheat kick).
+6. Toggle night vision / clear weather and use Reset Visuals.
+
+Troubleshooting
+----------------
+* If warning returns, inspect Games/FiveR.lua from top for stray code; compare with remote if needed.
+* Search for 'endfunction', duplicate function definitions, or leftover teleport code.
+* Confirm loader's fetchRemote still includes safeHttpGet fallback and executor allows HTTP.
+* Manually run game:HttpGet on FiveR.lua in executor to verify network access.
+* Some executors require enabling HttpService; check documentation.
+
+Pending Ideas
+-------------
+* Fine-tune flight altitude clamp if Alpine still flags usage.
+* Optional QoL: throttle police alerts, add user whitelist, or reintroduce teleports once reliable coordinates exist.
+* Keep this summary updated when new changes occur.
+
+Recent Timeline
+---------------
+* 23-10 evening: initial FiveR integration (with teleport UI) worked; later refactors removed teleports for stability.
+* 24-10 15:05 NL: confirmed working after reapplying stealth flight + police alerts; issue recurred when file merges corrupted syntax.
+* Loader fallback fix deployed 24-10 to handle executors without syn.request.
+
+Hand-off Reminder
+-----------------
+* Latest files in this workspace (Loader.lua & Games/FiveR.lua) contain all fixes as of 24-10 15:30 NL.
+* Refer to this summary before modifying FiveR to avoid reintroducing compile errors.
+

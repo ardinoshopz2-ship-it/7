@@ -137,6 +137,27 @@ local function isPoliceTeam(player)
     return false
 end
 
+local function isPoliceTeam(player)
+    if not player then
+        return false
+    end
+
+    local team = player.Team
+    if team and team.Name then
+        local name = string.lower(team.Name)
+        if name:find("police") or name:find("agent") or name:find("cop") or name:find("kmar") then
+            return true
+        end
+    end
+
+    local descriptor = string.lower(player.DisplayName or player.Name or "")
+    if descriptor:find("politie") or descriptor:find("agent") then
+        return true
+    end
+
+    return false
+end
+
 FiveR.Settings = {
     Utility = {
         AutoInteractPrompts = false,
