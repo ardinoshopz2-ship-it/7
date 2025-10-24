@@ -117,7 +117,11 @@ local function safeTouch(partA, partB)
 end
 
 local function isPoliceTeam(player)
-    local team = player and player.Team
+    if not player then
+        return false
+    end
+
+    local team = player.Team
     if team and team.Name then
         local name = string.lower(team.Name)
         if name:find("police") or name:find("agent") or name:find("cop") or name:find("kmar") then
@@ -125,14 +129,13 @@ local function isPoliceTeam(player)
         end
     end
 
-    local descriptor = string.lower(player and (player.DisplayName or player.Name) or "")
+    local descriptor = string.lower(player.DisplayName or player.Name or "")
     if descriptor:find("politie") or descriptor:find("agent") then
         return true
     end
 
     return false
 end
-
 
 FiveR.Settings = {
     Utility = {
@@ -838,6 +841,7 @@ function FiveR:Destroy()
 end
 
 return FiveR
+
 
 
 
