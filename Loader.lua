@@ -57,6 +57,19 @@ local function randomId(prefix)
     return (prefix or "Inovo") .. "_" .. suffix
 end
 
+local function safeHttpGet(url)
+    if type(game.HttpGet) ~= "function" then
+        return nil
+    end
+
+    local ok, response = pcall(game.HttpGet, game, url)
+    if ok and response then
+        return response
+    end
+
+    return nil
+end
+
 local function fetchRemote(url)
     local saltedUrl = url
     local delimiter = url:find("?", 1, true) and "&" or "?"
@@ -73,6 +86,11 @@ local function fetchRemote(url)
         if ok and response and response.StatusCode == 200 and response.Body then
             return response.Body
         end
+    end
+
+    local fallback = safeHttpGet(saltedUrl)
+    if fallback and #fallback > 0 then
+        return fallback
     end
 
     return nil
